@@ -1,4 +1,4 @@
-# Dp-cogs V3
+# Dk-cogs V3
 UwU!!!! Cogs under development  
 Discord User: {dhiva}#1852  
 
