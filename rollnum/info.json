@@ -1,0 +1,19 @@
+{
+    "name": "rollnum",
+    "short": "cog to display college member details",
+    "description": "a cog to know the details of members with their roll_number",
+    "end_user_data_statement": "no data of the user will be saved",
+    "install_msg": "well, this is not ment to be installed by everyone",
+    "author": [
+        "[{dhiva}#1852]"
+    ],
+    "required_cogs": {},
+    "requirements": [],
+    "tags": [
+        "[\"fun\"]"
+    ],
+    "min_bot_version": "3.3.10",
+    "hidden": false,
+    "disabled": false,
+    "type": "COG"
+}
