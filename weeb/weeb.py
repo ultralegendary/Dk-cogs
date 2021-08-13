@@ -25,6 +25,9 @@ class Weeb(commands.Cog):
 
         await ctx.send("https://cdn.discordapp.com/emojis/742951429211291758.png")
     @commands.command()
+    async def lmao(self,ctx):
+        await ctx.send('https://cdn.discordapp.com/emojis/852752413403381781.png?v=1')
+    @commands.command()
     async def baka(self,ctx):
         pass
     @commands.command()

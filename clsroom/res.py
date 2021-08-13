@@ -13,34 +13,75 @@ def create_dates(sdate,edate):
         print(day)
         
 Mtechcs={
-"Day-1":["DS","CA","OS-Lab","OS-Lab","",],
-"Day-2":["OOP","DAA","DS","OS","",],
-"Day-3":["OS","CA","DAA","AC","",],
-"Day-4":["DAA","OOP","AA-Lab","AA-Lab","",],
-"Day-5":["CA","DS","OOP-Lab","OOP-Lab","",],
-"Day-6":["OOP","DS","OS","AC","",]
+"Day-1":["DS","CA","OS-LAB","OS-LAB"],
+"Day-2":["OOP","DAA","DS","OS"],
+"Day-3":["OS","CA","DAA","AC"],
+"Day-4":["DAA","OOP","AA-LAB","AA-LAB"],
+"Day-5":["CA","DS","OOP-LAB","OOP-LAB"],
+"Day-6":["OOP","DS","OS","AC"]
 }
+linksmt={
+    'OS-LAB':'https://meet.google.com/lookup/gysmi2d4b2',
+    'OS':'https://meet.google.com/lookup/f67mr7goeg',
+    'OOP':' https://meet.google.com/lookup/bpecf37dx4',
+    'DS':'https://meet.google.com/lookup/cqbwumwxii',
+    'DAA':'https://meet.google.com/lookup/gm5kc24tch',
+    'AA-LAB':'https://meet.google.com/lookup/hhqownlv75',
+    'CA':'https://meet.google.com/lookup/gyrebbdgtd',
+    'AC':'https://meet.google.com/lookup/b3mrxnc4ts'
+}
+
+linkscse3b={
+'MES' : 'https://meet.google.com/lookup/drjtqe5rrt?authuser=0&hs=179',
+'MES-LAB': 'https://meet.google.com/lookup/b6n5riqe52?authuser=0&hs=179',
+'AI' : 'https://meet.google.com/lookup/dolf4bwujq?authuser=0&hs=179',
+'AI-LAB': 'https://meet.google.com/lookup/gtmfjssr4l?authuser=0&hs=179',
+'OOAD'  :'https://meet.google.com/lookup/dbfwgpvrn2?authuser=0&hs=179',#
+'Mini Project' : 'https://meet.google.com/lookup/hq5d6vy37a?authuser=0&hs=179',
+'TOC' : 'https://meet.google.com/lookup/eaepkp5z27?authuser=0&hs=179',
+'BlockChain' : 'https://meet.google.com/lookup/buvvpfu5cb?authuser=0&hs=179',
+'DCN' : 'https://meet.google.com/lookup/h4f3exqgdy?authuser=0&hs=179',
+'CN-lab' : 'https://meet.google.com/lookup/cvkrksow2c?authuser=0&hs=179',
+'PL':'https://youtube.com/watch?v=dQw4w9WgXcQ'
+}
+
+cse3_b1= {
+"Day-1": ["MES","PL","TOC","OOAD"],
+"Day-2": ["DCN","BlockChain","AI","MES-LAB"],
+"Day-3": ["OOAD","TOC","MES","AI"],
+"Day-4": ["DON","Mini Project","BlockChain","PL"],
+"Day-5": ["TOC","BlockChain","DCN","CN-LAB"],
+"Day-6": ["MES","OOAD","AI","AI-LAB"]
+    }
+cse3_b2={
+"Day-1": ["OOAD","PL","AI","DCN"],
+"Day-2": ["BlockChain","TOC","DCN","CN LAB"],
+"Day-3": ["AI","PE2","DCN","OOAD"],
+"Day-4": ["TOC","Mini Project","MES","PL"],
+"Day-5": ["MES","BlockChain","A1","AI LAB"]
+    }
 
 AIBatch1={
 #time  9:30,10:30,1:30,2:30,3:30
-"Day-1":["MS","DAA","OOP","FOS",""],
-"Day-2":["DBMS","MS","AI","DBMS-LAB",""],
+"Day-1":["MS","DAA","OOP","FOS","NILL"],
+"Day-2":["DBMS","MS","AI","DBMS-LAB","NILL"],
 "Day-3":["OOP","FOS","DBMS","MS-LAB","MS-LAB"],
-"Day-4":["FOS-LAB","FOS-LAB","OOP","DAA",""],
+"Day-4":["FOS-LAB","FOS-LAB","OOP","DAA","NILL"],
 "Day-5":["AI","DBMS","MS","FOC","MC"],
-"Day-6":["sAA","AI","OOP-LAB","OOP-LAB",""]
+"Day-6":["sAA","AI","OOP-LAB","OOP-LAB","NILL"]
 }
 AIBatch2={
-"Day-1":["DBMS","OOP","FOS","MS",""],
-"Day-2":["DAA","FOS","OOP-LAB","OOP-LAB",""],
+"Day-1":["DBMS","OOP","FOS","MS","NILL"],
+"Day-2":["DAA","FOS","OOP-LAB","OOP-LAB","NILL"],
 "Day-3":["MS","AI","DAA","FOS-LAB","FOS-LAB"],
-"Day-4":["DAA","OOP","MS","AI",""],
+"Day-4":["DAA","OOP","MS","AI","NILL"],
 "Day-5":["MS-LAB","MS-LAB","AI","DBMS","MC"],
-"Day-6":["OOP","DBMS","FOS","DBMS-LAB",""],
+"Day-6":["OOP","DBMS","FOS","DBMS-LAB","NILL"],
 }
 
 links = {
     'MS':'https://meet.google.com/lookup/bwteimvi63',
+    'MS-LAB':'https://meet.google.com/lookup/bwteimvi63',
     'OOP':'https://meet.google.com/lookup/cd272ht2kh',
     'OOP-LAB':'https://meet.google.com/lookup/uut2tetnd',
     'MC':'https://meet.google.com/lookup/hkg5hqdvwn',
@@ -50,6 +91,7 @@ links = {
     'DAA':'https://meet.google.com/lookup/hjdxpoh2tm',
     'FOS':'https://meet.google.com/lookup/dfdcf2bhyw',
     'FOS-LAB':'https://meet.google.com/lookup/anksa465tu',
+    'NILL':'https://youtube.com/watch?v=dQw4w9WgXcQ'
 }
 
 day_order={

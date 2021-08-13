@@ -1,6 +1,6 @@
 from __future__ import print_function
 from typing import Literal
-from datetime import date, datetime, timedelta
+from datetime import date,datetime, timedelta
 
 import discord
 from redbot.core import commands
@@ -15,8 +15,8 @@ from tabulate import tabulate
 import os.path
 from sys import path
 import time
-path.insert(0,r"Dk-cogs\clsroom")
-import res
+from . import res
+
 class navi(commands.Cog):
     """cog to maintain classroom things"""
     def __init__(self,bot):
@@ -33,8 +33,13 @@ class navi(commands.Cog):
         self.tt1=res.AIBatch1
         self.tt2=res.AIBatch2
         self.mtechtt=res.Mtechcs
+        self.cse3_b1tt=res.cse3_b1
+        self.cse3_b2tt=res.cse3_b2
         self.today=date.today()
         self.li=res.links
+        self.li2=res.linksmt
+        self.li3=res.linkscse3b
+
 
         self.time=time.time()
         self.t=self.today.ctime()
@@ -48,34 +53,63 @@ class navi(commands.Cog):
         
         #sdate = date(*[int(i)for i in sdate.split('-')])
         
+    @timetable.command()
+    async def cse3b(self,ctx):
+        table1=[]
+        table2=[]
+        for i in self.cse3_b1tt.keys():
+            table1.append([i]+[self.cse3_b1tt[i][j]for j in range(4)])
+        for i in self.cse3_b2tt.keys():
+            table2.append([i]+[self.cse3_b2tt[i][j]for j in range(4)])
 
+        await menu(
+            ctx,
+            [
+                "*CSE III TimeTable*"+f"```{i} ```" + f"**Batch {j+1}**" 
+                for j,i in enumerate(list([
+                    
+                        tabulate(
+                            table1,
+                            headers=["9:30","10:30", "1:30", "2:30"],
+                            tablefmt="presto",
+                            colalign=("left",),
+                        )
+                        ,
+                        tabulate(
+                            table2,
+                            headers=["9:30","10:30", "1:30", "2:30"],
+                            tablefmt="presto",
+                            colalign=("left",),
+                        )]
+                    
+                ))
+            ],
+            DEFAULT_CONTROLS,
+            )
     @timetable.command()
     async def mtech(self,ctx):
         
         table1=[]
         
         for i in self.mtechtt.keys():
-            
-            table1.append([i]+[self.mtechtt[i][j]for j in range(5)])
-        
+            table1.append([i]+[self.mtechtt[i][j]for j in range(4)])
 
         await menu(
             ctx,
             [
-                f"```{i} ```" + f"**Batch {j+1}**" 
-                for j,i in enumerate(list([
-                    
+                "*Mtech TimeTable*" + f"```{i} ```"
+                for i in list([
                         tabulate(
                             table1,
-                            headers=["9:30","10:30", "1:30", "2:30","3:30"],
+                            headers=["9:30","10:30", "1:30", "2:30"],
                             tablefmt="presto",
                             colalign=("left",),
                         )
-                        ]
-                    
-                ))
+                        ]   
+                )
             ],
-            DEFAULT_CONTROLS,
+            {}
+            
             )
 
     @timetable.command()
@@ -92,7 +126,7 @@ class navi(commands.Cog):
         await menu(
             ctx,
             [
-                f"```{i} ```" + f"**Batch {j+1}**" 
+                "*AIDS TimeTable*"+f"```{i} ```" + f"**Batch {j+1}**" 
                 for j,i in enumerate(list([
                     
                         tabulate(
@@ -108,7 +142,6 @@ class navi(commands.Cog):
                             tablefmt="presto",
                             colalign=("left",),
                         )]
-                    
                 ))
             ],
             DEFAULT_CONTROLS,
@@ -116,82 +149,180 @@ class navi(commands.Cog):
     
     @commands.group()
     async def link(self,ctx):
+        self.today=date.today()
+        self.time=datetime.now()#.strftime("%H:%M:%S")
         """`[p]link department` gives the clasroom meetlink of upcomming class"""
         
         
     @link.command()
     async def ai(self,ctx,batch:int=None):
-        """Displays the joining link of next class"""
-        self.time=datetime.now()#.strftime("%H:%M:%S")
-        msg=[]
+        """Displays the joining link of next class for AI-II year"""
+        
         embs=[]
         
-        st,s='',''
+        d1=datetime.today()
         d=self.today
         while(self.day_order[str(d)]=="Day-0"):
             d+=timedelta(days=1)
         if(d!=self.today):
-            emb=discord.Embed(title="Holiday",description=f"Holiday\n{self.today-d} day(s) untill next working day")
+            emb=discord.Embed(title="Holiday",description=f"{self.today-d} day(s) untill next working day")
             embs.append(emb)
-            st+=f"Holiday\n{self.today-d} day(s) untill next working day"
+            
         else:
-            emb=discord.Embed(title=f"{self.day_order[str(d)]}")
-            st+=f"{self.day_order[str(d)]}"
+            emb=discord.Embed(title="\tAIDS B1 "+f"{self.day_order[str(d)]}")
+            
             index=0
             while(index<5 and self.time.replace(hour=self.timestamp[index],minute=30,second=0)<self.time):
                 index+=1
-            if(index<5):
-                if batch!=2:
-                    emb.add_field(name="Batch-1 Upcomming class",value=f"{self.tt1[self.day_order[str(d)]][index]}\n **STart time:** {self.timestamp[index]}:30 \n [Google-Meet-link]({self.li[self.tt1[self.day_order[str(d)]][index]]})")
+            if index<5 or (index==5 and self.time.replace(hour=self.timestamp[index-1]+1,minute=30,second=0)>self.time):
+                
                     
-                    s+=f"\n`Upcomming class :`  {self.tt1[self.day_order[str(d)]][index]} \t{self.timestamp[index]}:30\
-                    \n`Link:`  <{self.li[self.tt1[self.day_order[str(d)]][index]]}>"
-                    if index!=0:
-                        emb.add_field(name="Batch-1 Ongoing class",value=f"{self.tt1[self.day_order[str(d)]][index-1]}\n **End time:** {self.timestamp[index]+1}:30 \n [Google-Meet-link]({self.li[self.tt1[self.day_order[str(d)]][index-1]]})")
-                    
-                        s+=f"\n`Ongoing class :`  {self.tt1[self.day_order[str(d)]][index-1]}\
-                        \n`Link:`  <{self.li[self.tt1[self.day_order[str(d)]][index-1]]}>"
-                    msg.append(s)
-                    embs.append(emb)
-                emb=discord.Embed(title=f"{self.day_order[str(d)]}")
-                s=''
-                emb.add_field(name="Batch-2 Upcomming class",value=f"{self.tt2[self.day_order[str(d)]][index]}\n **Start time:** {self.timestamp[index]}:30 \n [Google-Meet-Link]({self.li[self.tt2[self.day_order[str(d)]][index]]})")
-                s+=f"\n`Upcomming class :`  {self.tt2[self.day_order[str(d)]][index]}\
-                    \n`Link:`   <{self.li[self.tt2[self.day_order[str(d)]][index]]}>"
-
+                d1=datetime.today()
                 if index!=0:
-                    emb.add_field(name="Batch-2 Ongoing class",value=f"{self.tt2[self.day_order[str(d)]][index-1]}\n **End time:** {self.timestamp[index]+1}:30 \n {self.li[self.tt2[self.day_order[str(d)]][index-1]]}")
-                    s+=f"\n`Ongoing class :`  {self.tt2[self.day_order[str(d)]][index-1]}\
-                    \n`Link:`  <{self.li[self.tt2[self.day_order[str(d)]][index-1]]}>"
-                msg.append(s)
+                    if(self.timestamp[index-1]+1<d1.hour or(self.timestamp[index-1]+1==d1.hour and d1.minute>=30)):
+                        emb.add_field(name="Past class\t",value=f"**{self.tt1[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-link]({self.li[self.tt1[self.day_order[str(d)]][index-1]]})")
+                    else:
+                        emb.add_field(name="Ongoing class\t",value=f"**{self.tt1[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-link]({self.li[self.tt1[self.day_order[str(d)]][index-1]]})")
+                    if index !=5:
+                        emb.add_field(name="Upcomming class",value=f"**{self.tt1[self.day_order[str(d)]][index]}**\n *Start time:* {self.timestamp[index]}:30 \n [Google-Meet-link]({self.li[self.tt1[self.day_order[str(d)]][index]]})")
+                    
+                    embs.append(emb)
+                emb=discord.Embed(title="\tAIDS B2 "+f"{self.day_order[str(d)]}")
+                
+                if index!=0:
+                    if(self.timestamp[index-1]+1<d1.hour or(self.timestamp[index-1]+1==d1.hour and d1.minute>=30)):
+                        emb.add_field(name="Past class\t",value=f"**{self.tt2[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-link]({self.li[self.tt2[self.day_order[str(d)]][index-1]]})")
+                    else:
+                        emb.add_field(name="Ongoing class\t",value=f"**{self.tt2[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-Link]({self.li[self.tt2[self.day_order[str(d)]][index-1]]})")
+                if index!=5:
+                    emb.add_field(name="Upcomming class",value=f"**{self.tt2[self.day_order[str(d)]][index]}**\n *Start time:* {self.timestamp[index]}:30 \n [Google-Meet-Link]({self.li[self.tt2[self.day_order[str(d)]][index]]})")
+
                 embs.append(emb)
 
             else:
-                embs.append(discord.Embed(title="End of day",description="class tommrow"))
-                s="No classes for today"
-        
-        
-        
+                d+=timedelta(days=1)
+                i=0
+                while(self.day_order[str(d)]=="Day-0"):
+                    d+=timedelta(days=1)
+                    i+=1
+                
+
+                embs.append(discord.Embed(title="End of "+self.day_order[str(d-timedelta(days=i+1))],description=f"*Next class in* {i} days, {9+24-d1.hour} hours"))
+                
         await menu(
             ctx,
             embs,
             DEFAULT_CONTROLS,
             )
-        return
+
+    @link.command()
+    async def cs(self,ctx):
+        """Displays the joining link of next class for Cse-B-III year"""
+        #if(ctx.author.id):
+        embs=[]
+        
+        d1=datetime.today()
+        d=self.today
+        while(self.day_order[str(d)]=="Day-0"):
+            d+=timedelta(days=1)
+        if(d!=self.today):
+            emb=discord.Embed(title="Holiday",description=f"{self.today-d} day(s) untill next working day")
+            embs.append(emb)
+            
+        else:
+            emb=discord.Embed(title="\tCSE-B B1 "+f"{self.day_order[str(d)]}")
+            
+            index=0
+            while(index<4 and self.time.replace(hour=self.timestamp[index],minute=30,second=0)<self.time):
+                index+=1
+            if(index<4 or (index==4 and self.time.replace(hour=self.timestamp[index-1]+1,minute=30,second=0)>self.time)):
+                
+                    
+                d1=datetime.today()
+                if index!=0:
+                    if(self.timestamp[index-1]+1<d1.hour or(self.timestamp[index-1]+1==d1.hour and d1.minute>=30)):
+                        emb.add_field(name="Past class\t",value=f"**{self.cse3_b1tt[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-link]({self.li3[self.cse3_b1tt[self.day_order[str(d)]][index-1]]})")
+                    else:
+                        emb.add_field(name="Ongoing class\t",value=f"**{self.cse3_b1tt[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-link]({self.li3[self.cse3_b1tt[self.day_order[str(d)]][index-1]]})")
+                if(index!=4):
+                    emb.add_field(name="Upcomming class",value=f"**{self.cse3_b1tt[self.day_order[str(d)]][index]}**\n *Start time:* {self.timestamp[index]}:30 \n [Google-Meet-link]({self.li3[self.cse3_b1tt[self.day_order[str(d)]][index]]})")
+                embs.append(emb)
+                
+                emb=discord.Embed(title="\tCSE-B B2 "+f"{self.day_order[str(d)]}")
+                if index!=0:
+                    if(self.timestamp[index-1]+1<d1.hour or(self.timestamp[index-1]+1==d1.hour and d1.minute>=30)):
+                        emb.add_field(name="Past class\t",value=f"**{self.tt2[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-link]({self.li[self.tt2[self.day_order[str(d)]][index-1]]})")
+                    else:
+                        emb.add_field(name="Ongoing class\t",value=f"**{self.tt2[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-Link]({self.li[self.tt2[self.day_order[str(d)]][index-1]]})")
+                if index!=4:
+                    emb.add_field(name="Upcomming class",value=f"**{self.tt2[self.day_order[str(d)]][index]}**\n *Start time:* {self.timestamp[index]}:30 \n [Google-Meet-Link]({self.li[self.tt2[self.day_order[str(d)]][index]]})")
+                embs.append(emb)
+
+            else:
+            
+                d+=timedelta(days=1)
+                i=0
+                while(self.day_order[str(d)]=="Day-0"):
+                    d+=timedelta(days=1)
+                    i+=1
+                
+                embs.append(discord.Embed(title="End of "+self.day_order[str(d-timedelta(days=i+1))],description=f"*Next class in* {i} days, {9+24-d1.hour} hours"))
+            
         await menu(
             ctx,
-            [
-                st+f"{i} " + f"\n**Batch {j+1}**" 
-                for j,i in enumerate(list(
-                        msg           
-                ))
-            ],
+            embs,
             DEFAULT_CONTROLS,
             )
-
-        #await ctx.send(msg)
         
 
+
+    
+    @link.command()
+    async def mt(self,ctx,batch:int=None):
+        """Displays the joining link of next class for MtechCse-II year"""
+        
+        
+        d1=datetime.today()
+        d=self.today
+        while(self.day_order[str(d)]=="Day-0"):
+            d+=timedelta(days=1)
+        if(d!=self.today):
+            emb=discord.Embed(title="Holiday",description=f"{self.today-d} day(s) untill next working day")
+            
+            
+        else:
+            
+            
+            index=0
+            while(index<4 and self.time.replace(hour=self.timestamp[index],minute=30,second=0)<self.time):
+                index+=1
+            if index<4 or(index==4 and self.time.replace(hour=self.timestamp[index-1]+1,minute=30,second=0)>self.time):
+                emb=discord.Embed(title="\tMtech "+f"{self.day_order[str(d)]}")
+                
+                
+                if index!=0:
+                    if(self.timestamp[index-1]+1<d1.hour or(self.timestamp[index-1]+1==d1.hour and d1.minute>=30)):
+                        emb.add_field(name="Past class\t",value=f"**{self.mtechtt[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-link]({self.li2[self.mtechtt[self.day_order[str(d)]][index-1]]})")
+                    else:
+                        emb.add_field(name="Ongoing class\t",value=f"**{self.mtechtt[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-Link]({self.li2[self.mtechtt[self.day_order[str(d)]][index-1]]})")
+                if(index!=4):
+                    emb.add_field(name="Upcomming class",
+                        value=f"**{self.mtechtt[self.day_order[str(d)]][index]}**\n*Start time:* {self.timestamp[index]}:30 \n[Google-Meet-Link]({self.li2[self.mtechtt[self.day_order[str(d)]][index]]})")
+
+            else:
+                
+                d+=timedelta(days=1)
+                i=0
+                while(self.day_order[str(d)]=="Day-0"):
+                    d+=timedelta(days=1)
+                    i+=1
+                emb=discord.Embed(title="End of "+self.day_order[str(d-timedelta(days=i+1))],description=f"*Next class in* {i} days, {9+24-d1.hour} hours")
+                
+        await ctx.send(embed=emb)
+        
+
+        #await ctx.send(msg)
+    
 
         
 
