@@ -14,7 +14,7 @@ from tabulate import tabulate
 import os.path
 
 
-from selenium import webdriver
+
 
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
