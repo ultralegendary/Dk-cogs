@@ -149,9 +149,10 @@ class navi(commands.Cog):
     
     @commands.group()
     async def link(self,ctx):
+        """`[p]link department` gives the clasroom meetlink of upcomming class"""
         self.today=date.today()
         self.time=datetime.now()#.strftime("%H:%M:%S")
-        """`[p]link department` gives the clasroom meetlink of upcomming class"""
+        
         
         
     @link.command()
@@ -162,10 +163,13 @@ class navi(commands.Cog):
         
         d1=datetime.today()
         d=self.today
+        j=-1
         while(self.day_order[str(d)]=="Day-0"):
             d+=timedelta(days=1)
+            j+=1
         if(d!=self.today):
-            emb=discord.Embed(title="Holiday",description=f"{self.today-d} day(s) untill next working day")
+            emb=discord.Embed(title="Holiday",description=f"*Next class in* {j} days, {(9+24-d1.hour)%24} hours")
+            emb.set_footer(text=self.day_order[str(d)])
             embs.append(emb)
             
         else:
@@ -174,7 +178,7 @@ class navi(commands.Cog):
             index=0
             while(index<5 and self.time.replace(hour=self.timestamp[index],minute=30,second=0)<self.time):
                 index+=1
-            if index<5 or (index==5 and self.time.replace(hour=self.timestamp[index-1]+1,minute=30,second=0)>self.time):
+            if self.time.replace(hour=self.timestamp[index-1]+1,minute=30,second=0)>self.time:
                 
                     
                 d1=datetime.today()
@@ -208,12 +212,15 @@ class navi(commands.Cog):
                 
 
                 embs.append(discord.Embed(title="End of "+self.day_order[str(d-timedelta(days=i+1))],description=f"*Next class in* {i} days, {9+24-d1.hour} hours"))
-                
-        await menu(
-            ctx,
-            embs,
-            DEFAULT_CONTROLS,
-            )
+        
+        if len(embs)>1:
+            await menu(
+                ctx,
+                embs,
+                DEFAULT_CONTROLS,
+                )
+        else:
+            await ctx.send(embed=embs[0])
 
     @link.command()
     async def cs(self,ctx):
@@ -223,10 +230,14 @@ class navi(commands.Cog):
         
         d1=datetime.today()
         d=self.today
+        j=-1
         while(self.day_order[str(d)]=="Day-0"):
+            j+=1
             d+=timedelta(days=1)
         if(d!=self.today):
-            emb=discord.Embed(title="Holiday",description=f"{self.today-d} day(s) untill next working day")
+            emb=discord.Embed(title="Holiday",description=f"*Next class in* {j} days, {(9+24-d1.hour)%24} hours")
+            emb.set_footer(text=self.day_order[str(d)])
+            
             embs.append(emb)
             
         else:
@@ -235,7 +246,7 @@ class navi(commands.Cog):
             index=0
             while(index<4 and self.time.replace(hour=self.timestamp[index],minute=30,second=0)<self.time):
                 index+=1
-            if(index<4 or (index==4 and self.time.replace(hour=self.timestamp[index-1]+1,minute=30,second=0)>self.time)):
+            if self.time.replace(hour=self.timestamp[index-1]+1,minute=30,second=0)>self.time:
                 
                     
                 d1=datetime.today()
@@ -267,12 +278,15 @@ class navi(commands.Cog):
                     i+=1
                 
                 embs.append(discord.Embed(title="End of "+self.day_order[str(d-timedelta(days=i+1))],description=f"*Next class in* {i} days, {9+24-d1.hour} hours"))
-            
-        await menu(
+        
+        if(len(embs)>1):
+            await menu(
             ctx,
             embs,
             DEFAULT_CONTROLS,
             )
+        else :
+            await ctx.send(embed=embs[0])
         
 
 
@@ -284,10 +298,13 @@ class navi(commands.Cog):
         
         d1=datetime.today()
         d=self.today
+        j=-1
         while(self.day_order[str(d)]=="Day-0"):
+            j+=1
             d+=timedelta(days=1)
         if(d!=self.today):
-            emb=discord.Embed(title="Holiday",description=f"{self.today-d} day(s) untill next working day")
+            emb=discord.Embed(title="Holiday",description=f"*Next class in* {j} days, {(9+24-d1.hour)%24} hours")
+            emb.set_footer(text=self.day_order[str(d)])
             
             
         else:
@@ -296,7 +313,7 @@ class navi(commands.Cog):
             index=0
             while(index<4 and self.time.replace(hour=self.timestamp[index],minute=30,second=0)<self.time):
                 index+=1
-            if index<4 or(index==4 and self.time.replace(hour=self.timestamp[index-1]+1,minute=30,second=0)>self.time):
+            if self.time.replace(hour=self.timestamp[index-1]+1,minute=30,second=0)>self.time:
                 emb=discord.Embed(title="\tMtech "+f"{self.day_order[str(d)]}")
                 
                 
