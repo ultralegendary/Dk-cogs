@@ -55,6 +55,7 @@ class navi(commands.Cog):
         
     @timetable.command()
     async def cse3b(self,ctx):
+        """Prints timetable of cse3b"""
         table1=[]
         table2=[]
         for i in self.cse3_b1tt.keys():
