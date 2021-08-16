@@ -17,12 +17,12 @@ from sys import path
 import time
 from . import res
 
-
+'''
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-
+'''
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 
 class navi(commands.Cog):
@@ -64,7 +64,7 @@ class navi(commands.Cog):
             force_registration=True,
         )
 
-
+    '''
         self.SCOPES = ['https://www.googleapis.com/auth/classroom.courses.readonly']
         self.creds=None
         if os.path.exists('token.json'):
@@ -82,6 +82,7 @@ class navi(commands.Cog):
                 token.write(self.creds.to_json())
 
         self.service = build('classroom', 'v1', credentials=self.creds)
+    '''
 
 
 
@@ -226,10 +227,10 @@ class navi(commands.Cog):
                         emb.add_field(name="Past class\t",value=f"**{self.tt1[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-link]({self.li[self.tt1[self.day_order[str(d)]][index-1]]})")
                     else:
                         emb.add_field(name="Ongoing class\t",value=f"**{self.tt1[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-link]({self.li[self.tt1[self.day_order[str(d)]][index-1]]})")
-                    if index !=5:
-                        emb.add_field(name="Upcomming class",value=f"**{self.tt1[self.day_order[str(d)]][index]}**\n *Start time:* {self.timestamp[index]}:30 \n [Google-Meet-link]({self.li[self.tt1[self.day_order[str(d)]][index]]})")
+                if index !=5:
+                    emb.add_field(name="Upcomming class",value=f"**{self.tt1[self.day_order[str(d)]][index]}**\n *Start time:* {self.timestamp[index]}:30 \n [Google-Meet-link]({self.li[self.tt1[self.day_order[str(d)]][index]]})")
                     
-                    embs.append(emb)
+                embs.append(emb)
                 emb=discord.Embed(title="\tAIDS B2 "+f"{self.day_order[str(d)]}")
                 
                 if index!=0:
@@ -469,7 +470,7 @@ class navi(commands.Cog):
             
         except:
             await ctx.send("Not found")
-    
+    '''
     @commands.command()
     async def classes(self,ctx,options:int):
         """list down the classes available in classroom
@@ -483,9 +484,7 @@ class navi(commands.Cog):
                 self.creds.refresh(Request())
         else:
             pass
-            '''flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', self.SCOPES)
-            self.creds = flow.run_local_server(port=0)'''
+            
         # Save the credentials for the next run
         with open('token.json', 'w') as token:
             token.write(self.creds.to_json())
@@ -507,4 +506,4 @@ class navi(commands.Cog):
 
         
 
-
+'''

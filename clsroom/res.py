@@ -24,6 +24,7 @@ linksmt={
     'OS-LAB':'https://meet.google.com/lookup/gysmi2d4b2',
     'OS':'https://meet.google.com/lookup/f67mr7goeg',
     'OOP':' https://meet.google.com/lookup/bpecf37dx4',
+    'OOP-LAB':' https://meet.google.com/lookup/bpecf37dx4',
     'DS':'https://meet.google.com/lookup/cqbwumwxii',
     'DAA':'https://meet.google.com/lookup/gm5kc24tch',
     'AA-LAB':'https://meet.google.com/lookup/hhqownlv75',
@@ -56,9 +57,10 @@ cse3_b1= {
 cse3_b2={
 "Day-1": ["OOAD","PL","AI","DCN"],
 "Day-2": ["BlockChain","TOC","DCN","CN LAB"],
-"Day-3": ["AI","PE2","DCN","OOAD"],
+"Day-3": ["AI","BlockChain","DCN","OOAD"],
 "Day-4": ["TOC","Mini Project","MES","PL"],
-"Day-5": ["MES","BlockChain","A1","AI LAB"]
+"Day-5": ["MES","BlockChain","AI","AI-LAB"],
+"Day-6":["BlockChain","TOC","MES","MES-LAB"]
     }
 
 AIBatch1={
