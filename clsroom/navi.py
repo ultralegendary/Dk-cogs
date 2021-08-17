@@ -52,12 +52,13 @@ class navi(commands.Cog):
         self.time=time.time()
         self.t=self.today.ctime()
         self.timestamp=[9,10,13,14,15]
+        self.tableheaders=["9:30","10:30", "1:30", "2:30"]
 
 
         # rollnum things
         
-        self.data=pd.read_csv("Dk-cogs/rollnum/resource/db.csv")
-        self.ai_data=pd.read_csv("Dk-cogs/rollnum/resource/ai.csv")
+        self.data=pd.read_csv("Dk-cogs/clsroom/resource/db.csv")
+        self.ai_data=pd.read_csv("Dk-cogs/clsroom/resource/ai.csv")
         self.config = Config.get_conf(
             self,
             identifier=12345,
@@ -89,35 +90,61 @@ class navi(commands.Cog):
     @commands.group()
     async def timetable(self,ctx):
         """`[p]timetable department` displays the timetable of the department"""
+        self.today=date.today()
+        if ctx.author.id in [453158855904591872]:#cse3b
+            self.ttname="CSE III B TIMETABLE"
+            self.cse3_b1tt=res.cse3_b1
+            self.cse3_b2tt=res.cse3_b2
+            self.tableheaders=["9:30","10:30", "1:30", "2:30"]
+            
+
+        #elif ctx.author.id in [497379893592719360]: #aids
+        #    await ctx.send("check")
+        elif ctx.author.id in [650735047569047552]: #cse3c(sree)
+            self.ttname="CSE III C TIMETABLE"
+            self.li3=res.linkscse3b
+            self.cse3_b1tt=res.cse3_c1
+            self.cse3_b2tt=res.cse3_c2
+            self.tableheaders=["9:30","10:30", "1:30", "2:30"]
+        elif ctx.author.id in [778438128527867915,497379893592719360]: #cse2b
+            self.ttname="CSE II C TIMETABLE"
+            self.cse3_b1tt=res.cse2_c1
+            self.cse3_b2tt=res.cse2_c2
+            self.tableheaders=["9:30","10:30", "1:30", "2:30","3:30"]
+
+            
+
+
+        
         
         #sdate = date(*[int(i)for i in sdate.split('-')])
         
     @timetable.command()
-    async def cse3b(self,ctx):
-        """Prints timetable of cse3b"""
+    async def cse(self,ctx):
+        """Prints timetable of cse for registered users"""
         table1=[]
         table2=[]
         for i in self.cse3_b1tt.keys():
-            table1.append([i]+[self.cse3_b1tt[i][j]for j in range(4)])
+            table1.append([i]+[self.cse3_b1tt[i][j]for j in range(len(self.tableheaders))])
         for i in self.cse3_b2tt.keys():
-            table2.append([i]+[self.cse3_b2tt[i][j]for j in range(4)])
+            table2.append([i]+[self.cse3_b2tt[i][j]for j in range(len(self.tableheaders))])
 
         await menu(
             ctx,
             [
-                "*CSE III TimeTable*"+f"```{i} ```" + f"**Batch {j+1}**" 
+                self.ttname+f"```{i} ```" + f"**Batch {j+1}**" 
                 for j,i in enumerate(list([
                     
                         tabulate(
                             table1,
-                            headers=["9:30","10:30", "1:30", "2:30"],
+                            headers=self.tableheaders,
                             tablefmt="presto",
                             colalign=("left",),
                         )
                         ,
                         tabulate(
                             table2,
-                            headers=["9:30","10:30", "1:30", "2:30"],
+                            headers=self.tableheaders,
                             tablefmt="presto",
                             colalign=("left",),
                         )]
@@ -154,12 +181,20 @@ class navi(commands.Cog):
 
     @timetable.command()
     async def aids2(self,ctx):
-        
+        """"""
         table1=[]
         table2=[]
         for i in self.tt1.keys():
-            table1.append([i]+[self.tt1[i][j]for j in range(5)])
+            if(i==self.day_order[str(self.today)]):
+                s=i+' -> '
+            else:
+                s=i
+            table1.append([s]+[self.tt1[i][j]for j in range(5)])
         for i in self.tt2.keys():
+            if(i==self.day_order[str(self.today)]):
+                s=i+' -> '
+            else:
+                s=i
             table2.append([i]+[self.tt2[i][j]for j in range(5)])
         
 
@@ -193,12 +228,32 @@ class navi(commands.Cog):
         self.today=date.today()
         self.time=datetime.now()#.strftime("%H:%M:%S")
         
+        if ctx.author.id in [453158855904591872]:#cse3b
+            self.li3=res.linkscse3b
+            self.cse3_b1tt=res.cse3_b1
+            self.cse3_b2tt=res.cse3_b2
+            self.tableheaders=["9:30","10:30", "1:30", "2:30"]
+            
+
+        #elif ctx.author.id in [497379893592719360]: #aids
+        #    await ctx.send("check")
+        elif ctx.author.id in [650735047569047552]: #cse3c(sree)
+            self.li3=res.linkscse3c
+            self.cse3_b1tt=res.cse3_c1
+            self.cse3_b2tt=res.cse3_c2
+            self.tableheaders=["9:30","10:30", "1:30", "2:30"]
+        elif ctx.author.id in [778438128527867915]: #cse2b
+            self.li3=res.linkscse2c
+            self.cse3_b1tt=res.cse2_c1
+            self.cse3_b2tt=res.cse2_c2
+            self.tableheaders=["9:30","10:30", "1:30", "2:30","3:30"]
+
+        
         
         
     @link.command()
     async def ai(self,ctx,batch:int=None):
         """Displays the joining link of next class for AI-II year"""
-        
         embs=[]
         
         d1=datetime.today()
@@ -218,7 +273,7 @@ class navi(commands.Cog):
             index=0
             while(index<5 and self.time.replace(hour=self.timestamp[index],minute=30,second=0)<self.time):
                 index+=1
-            if self.time.replace(hour=self.timestamp[index-1]+1,minute=30,second=0)>self.time:
+            if self.time.replace(hour=self.timestamp[index-1]+1,minute=30,second=0)>self.time or index<5:
                 
                     
                 d1=datetime.today()
@@ -284,29 +339,28 @@ class navi(commands.Cog):
             emb=discord.Embed(title="\tCSE-B B1 "+f"{self.day_order[str(d)]}")
             
             index=0
-            while(index<4 and self.time.replace(hour=self.timestamp[index],minute=30,second=0)<self.time):
+            while(index<len(self.tableheaders) and self.time.replace(hour=self.timestamp[index],minute=30,second=0)<self.time):
                 index+=1
-            if self.time.replace(hour=self.timestamp[index-1]+1,minute=30,second=0)>self.time:
+            if self.time.replace(hour=self.timestamp[index-1]+1,minute=30,second=0)>self.time or index<len(self.tableheaders):
                 
-                    
                 d1=datetime.today()
                 if index!=0:
                     if(self.timestamp[index-1]+1<d1.hour or(self.timestamp[index-1]+1==d1.hour and d1.minute>=30)):
                         emb.add_field(name="Past class\t",value=f"**{self.cse3_b1tt[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-link]({self.li3[self.cse3_b1tt[self.day_order[str(d)]][index-1]]})")
                     else:
                         emb.add_field(name="Ongoing class\t",value=f"**{self.cse3_b1tt[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-link]({self.li3[self.cse3_b1tt[self.day_order[str(d)]][index-1]]})")
-                if(index!=4):
+                if(index!=len(self.tableheaders)):
                     emb.add_field(name="Upcomming class",value=f"**{self.cse3_b1tt[self.day_order[str(d)]][index]}**\n *Start time:* {self.timestamp[index]}:30 \n [Google-Meet-link]({self.li3[self.cse3_b1tt[self.day_order[str(d)]][index]]})")
                 embs.append(emb)
                 
                 emb=discord.Embed(title="\tCSE-B B2 "+f"{self.day_order[str(d)]}")
                 if index!=0:
                     if(self.timestamp[index-1]+1<d1.hour or(self.timestamp[index-1]+1==d1.hour and d1.minute>=30)):
-                        emb.add_field(name="Past class\t",value=f"**{self.tt2[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-link]({self.li[self.tt2[self.day_order[str(d)]][index-1]]})")
+                        emb.add_field(name="Past class\t",value=f"**{self.cse3_b2tt[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-link]({self.li3[self.cse3_b2tt[self.day_order[str(d)]][index-1]]})")
                     else:
-                        emb.add_field(name="Ongoing class\t",value=f"**{self.tt2[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-Link]({self.li[self.tt2[self.day_order[str(d)]][index-1]]})")
-                if index!=4:
-                    emb.add_field(name="Upcomming class",value=f"**{self.tt2[self.day_order[str(d)]][index]}**\n *Start time:* {self.timestamp[index]}:30 \n [Google-Meet-Link]({self.li[self.tt2[self.day_order[str(d)]][index]]})")
+                        emb.add_field(name="Ongoing class\t",value=f"**{self.cse3_b2tt[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-Link]({self.li3[self.cse3_b2tt[self.day_order[str(d)]][index-1]]})")
+                if index!=len(self.tableheaders):
+                    emb.add_field(name="Upcomming class",value=f"**{self.cse3_b2tt[self.day_order[str(d)]][index]}**\n *Start time:* {self.timestamp[index]}:30 \n [Google-Meet-Link]({self.li3[self.cse3_b2tt[self.day_order[str(d)]][index]]})")
                 embs.append(emb)
 
             else:
@@ -353,7 +407,7 @@ class navi(commands.Cog):
             index=0
             while(index<4 and self.time.replace(hour=self.timestamp[index],minute=30,second=0)<self.time):
                 index+=1
-            if self.time.replace(hour=self.timestamp[index-1]+1,minute=30,second=0)>self.time:
+            if self.time.replace(hour=self.timestamp[index-1]+1,minute=30,second=0)>self.time or index<4:
                 emb=discord.Embed(title="\tMtech "+f"{self.day_order[str(d)]}")
                 
                 
@@ -422,7 +476,7 @@ class navi(commands.Cog):
         
         i=len(table)
         if i :
-            n=len(list(
+            li=list(
                     cf.pagify(
                         tabulate(
                             table,
@@ -431,22 +485,13 @@ class navi(commands.Cog):
                             colalign=("left",),
                         ),page_length=1900
                     )
-                ))
+                )
+            n=len(li)
             await menu(
             ctx,
             [
-                f"```{i} ```" + f"** > Page {j+1} / {n}**"                 
-                for j,i in enumerate(list(
-                    cf.pagify(
-                        tabulate(
-                            table,
-                            headers=["Sno","Name", "Department", "Roll no"],
-                            tablefmt="presto",
-                            colalign=("left",),
-                        ),page_length=1900
-                        
-                    )
-                ))
+                f"```{i} ```" + f"**> Page {j+1} / {n}**"                 
+                for j,i in enumerate(li)
             ],
             DEFAULT_CONTROLS,
             )
@@ -464,9 +509,12 @@ class navi(commands.Cog):
             emb = discord.Embed(title="Details")
             emb.add_field(name="Name",value=d.iloc[0]["Name"])
             emb.add_field(name="DOB",value=d.iloc[0]["DOB"])
+            #emb.add_field(name="Mobile",value=d.iloc[0]["Student_cell"])
+            #emb.add_field(name="Email",value=d.iloc[0]["Email_id"])
+            #emb.add_field(name="Address",value=d.iloc[0]["Per_Address"])
             
             emb.set_image(url=f"https://samwyc.codes/images/20euai{options:03}.jpg")
-            await ctx.send(embed=emb)
+            await ctx.send(embed=emb,)
             
         except:
             await ctx.send("Not found")
