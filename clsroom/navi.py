@@ -45,10 +45,10 @@ class navi(commands.Cog):
 
         # rollnum things
         self.data = pd.read_csv(
-            os.path.join(os.path.abspath(__file__ + "/../../"), "\\rollnum\\resource\\db.csv")
+            os.path.join(os.path.abspath(__file__ + "/../../"), "rollnum/resource/db.csv")
         )
         self.ai_data = pd.read_csv(
-            os.path.join(os.path.abspath(__file__ + "/../../"), "\\rollnum\\resource\\ai.csv")
+            os.path.join(os.path.abspath(__file__ + "/../../"), "rollnum/resource/ai.csv")
         )
         self.config = Config.get_conf(
             self,
