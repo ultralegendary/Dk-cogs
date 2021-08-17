@@ -252,7 +252,7 @@ class navi(commands.Cog):
 
     # rollnum cogs added here
     @commands.command()
-    async def rnum(self, ctx, option):
+    async def rnumnew(self, ctx, option):
         """displays the details of roll number provided"""
         o = option.upper()
         # data.loc[data["r_no"]=='17EUCS001']
