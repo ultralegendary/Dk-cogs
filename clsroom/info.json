@@ -1,0 +1,19 @@
+{
+    "name": "clsroom",
+    "short": "cog to get links and timetable",
+    "description": "read short desc",
+    "end_user_data_statement": "no data of the user will be saved",
+    "install_msg": ">_>",
+    "author": [
+        "{dhiva}#1852","epic guy"
+    ],
+    "required_cogs": {},
+    "requirements": ["python-dateutil"],
+    "tags": [
+        "fun","utils"
+    ],
+    "min_bot_version": "3.3.10",
+    "hidden": false,
+    "disabled": false,
+    "type": "COG"
+}

@@ -2,15 +2,14 @@ from typing import Literal
 import datetime as dt
 
 import discord
-from discord import user
 from redbot.core import commands
-from redbot.core.bot import Red
 from redbot.core.config import Config
 from redbot.core.utils import chat_formatting as cf
 from redbot.core.utils.menus import menu
 from redbot.core.utils.menus import DEFAULT_CONTROLS
 import pandas as pd
 import os
+from dateutil.tz import gettz
 from tabulate import tabulate
 from . import res
 
@@ -77,7 +76,7 @@ class navi(commands.Cog):
     """
 
     @commands.command()
-    async def connect(self, ctx, dept, batch):
+    async def connect(self, ctx, dept, batch: int = None):
         if dept not in ["cse3b", "mtech", "aids"]:
             return await ctx.send(
                 "Invalid department. Please choose from `cse3b`, `mtech` or `aids`"
@@ -94,7 +93,7 @@ class navi(commands.Cog):
 
         await ctx.send(
             f"Sucessfully registered as department {dept}"
-            + (f"and batch {batch}" if batch else "")
+            + (f" and batch {batch}" if batch else "")
         )
 
     @commands.command(aliases=["tt"])
@@ -136,7 +135,7 @@ class navi(commands.Cog):
 
         await menu(
             ctx,
-            [f"{dept.upper()}  **Batch {batch}** TimeTable ```{table} ``"],
+            [f"{dept.upper()}  **Batch {batch}** TimeTable \n `{table}`"],
             {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]},
         )
 
@@ -170,7 +169,7 @@ class navi(commands.Cog):
         embs = []
 
         # Getting correct time things
-        time_now = dt.datetime.now()
+        time_now = dt.datetime.now(tz=gettz("Asia/Kolkata"))
         time_now.replace(hour=time_now.hour + 1)
         day_order = res.day_order[time_now.strftime("%Y-%m-%d")]
 
@@ -191,7 +190,8 @@ class navi(commands.Cog):
             embs.append(emb)
         # Working day :(
         else:
-            emb = discord.Embed(title=f"{dept.upper()} {batch or ''} - {day_order}")
+            emb = discord.Embed(title=f"{day_order} | Batch-{batch}")
+            emb.set_author(name=dept.upper())
             dept_links = getattr(res, dept + "_links")
             # Getting period hour
             if time_now.hour < self.ref_time[0]:

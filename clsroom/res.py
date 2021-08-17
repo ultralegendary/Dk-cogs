@@ -74,7 +74,7 @@ aids_b1 = {
     "Day-3": ["OOP", "FOS", "DBMS", "MS-LAB", "MS-LAB"],
     "Day-4": ["FOS-LAB", "FOS-LAB", "OOP", "DAA", "NILL"],
     "Day-5": ["AI", "DBMS", "MS", "FOC", "MC"],
-    "Day-6": ["sAA", "AI", "OOP-LAB", "OOP-LAB", "NILL"],
+    "Day-6": ["DAA", "AI", "OOP-LAB", "OOP-LAB", "NILL"],
 }
 aids_b2 = {
     "Day-1": ["DBMS", "OOP", "FOS", "MS", "NILL"],
