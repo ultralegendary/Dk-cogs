@@ -139,7 +139,7 @@ class navi(commands.Cog):
             {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]},
         )
 
-    @commands.group(aliases=["links"])
+    @commands.command(aliases=["links"])
     async def link(self, ctx, dept=None, batch: int = None):
         """Setup up link using `[p]connect` else give your department and batch number
 
