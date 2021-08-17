@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal
+from typing import Literal
 import datetime as dt
 
 import discord
@@ -12,9 +12,6 @@ from redbot.core.utils.menus import DEFAULT_CONTROLS
 import pandas as pd
 import os
 from tabulate import tabulate
-import os.path
-from sys import path
-import time
 from . import res
 
 
@@ -48,10 +45,10 @@ class navi(commands.Cog):
 
         # rollnum things
         self.data = pd.read_csv(
-            os.path.abspath(__file__ + "/../../") + "\\rollnum\\resource\\db.csv"
+            os.path.join(os.path.abspath(__file__ + "/../../"), "\\rollnum\\resource\\db.csv")
         )
         self.ai_data = pd.read_csv(
-            os.path.abspath(__file__ + "/../../") + "\\rollnum\\resource\\ai.csv"
+            os.path.join(os.path.abspath(__file__ + "/../../"), "\\rollnum\\resource\\ai.csv")
         )
         self.config = Config.get_conf(
             self,
