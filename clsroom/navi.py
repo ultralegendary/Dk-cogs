@@ -5,7 +5,11 @@ from datetime import date,datetime, timedelta
 import discord
 from redbot.core import commands
 from redbot.core.bot import Red
+from redbot.core.commands.commands import group
 from redbot.core.config import Config
+from redbot.core import config
+
+
 from redbot.core.utils import chat_formatting as cf
 from redbot.core.utils.menus import menu
 from redbot.core.utils.menus import DEFAULT_CONTROLS
@@ -15,6 +19,7 @@ from tabulate import tabulate
 import os.path
 from sys import path
 import time
+
 from . import res
 
 '''
@@ -29,11 +34,13 @@ class navi(commands.Cog):
     """cog to maintain classroom things"""
     def __init__(self,bot):
         self.bot=bot
+        
         self.config = Config.get_conf(
             self,
             identifier=12345,
-            force_registration=True,
+            force_registration=False,
         )
+        self.config.register_user(cls=None)
         
         
         self.day_order=res.day_order
@@ -50,6 +57,7 @@ class navi(commands.Cog):
 
 
         self.time=time.time()
+        self.ttname="Unknown"
         self.t=self.today.ctime()
         self.timestamp=[9,10,13,14,15]
         self.tableheaders=["9:30","10:30", "1:30", "2:30"]
@@ -59,11 +67,7 @@ class navi(commands.Cog):
         
         self.data=pd.read_csv("Dk-cogs/clsroom/resource/db.csv")
         self.ai_data=pd.read_csv("Dk-cogs/clsroom/resource/ai.csv")
-        self.config = Config.get_conf(
-            self,
-            identifier=12345,
-            force_registration=True,
-        )
+        
 
     '''
         self.SCOPES = ['https://www.googleapis.com/auth/classroom.courses.readonly']
@@ -84,15 +88,56 @@ class navi(commands.Cog):
 
         self.service = build('classroom', 'v1', credentials=self.creds)
     '''
+    
+    @commands.command()
+    @commands.is_owner()
+    async def gets(self,ctx,id:int):
+        if (await self.config.user_from_id(id).cls())!=None:
+            await ctx.send(await self.config.user_from_id(id).cls())
+        else:
+            await ctx.send("Noting registered under this user")
 
+
+    @commands.command()
+    @commands.is_owner()
+    
+    async def con(self,ctx,cls:str,usrid:int):
+        """Connect usrid to cls
+        """
+        if cls not in ['aids2','cse3b','cse3c','cse2b','mtech2']:
+            await ctx.send("Invalid class\navailable classes: > aids2,cse3b,cse3c,cse2b,mtech2")
+        else:
+            await self.config.user_from_id(usrid).cls.set(cls)
+            await ctx.send("user registered with classid "+cls)
+
+
+        #a=self.config()
+        #a.user(ctx.author).nickname.set('bot boner')
+        #pets = await self.config.user(ctx.author).pets()
+        '''async with a.user_from_id(...).all() as u:
+     u.name = ....
+     u.nick   = ....'''
+        
+    
+    @commands.command()
+    async def connect(self,ctx,cls:str):
+        """Connect your id to timetable specified\n
+`[p]connect cse3c` Connects you to the CSE IIIrd Year C-section
+available classes: > aids2,cse3b,cse3c,cse2b,mtech2
+        """
+        if cls not in ['aids2','cse3b','cse3c','cse2b','mtech2']:
+            await ctx.send("Invalid class\navailable classes: > aids2,cse3b,cse3c,cse2b,mtech2")
+        else:
+            await self.config.user(ctx.author).cls.set(cls)
+            await ctx.send("user registered with classid "+cls)
 
 
     @commands.group()
     async def timetable(self,ctx):
         """`[p]timetable department` displays the timetable of the department"""
         self.today=date.today()
-        if ctx.author.id in [453158855904591872]:#cse3b
-            self.ttname="CSE III B TIMETABLE"
+        if ctx.author.id in [453158855904591872,497379893592719360]:#cse3b
+            self.ttname="CSE III B"
             self.cse3_b1tt=res.cse3_b1
             self.cse3_b2tt=res.cse3_b2
             self.tableheaders=["9:30","10:30", "1:30", "2:30"]
@@ -101,16 +146,17 @@ class navi(commands.Cog):
         #elif ctx.author.id in [497379893592719360]: #aids
         #    await ctx.send("check")
         elif ctx.author.id in [650735047569047552]: #cse3c(sree)
-            self.ttname="CSE III C TIMETABLE"
+            self.ttname="CSE III C"
             self.li3=res.linkscse3b
             self.cse3_b1tt=res.cse3_c1
             self.cse3_b2tt=res.cse3_c2
             self.tableheaders=["9:30","10:30", "1:30", "2:30"]
-        elif ctx.author.id in [778438128527867915,497379893592719360]: #cse2b
-            self.ttname="CSE II C TIMETABLE"
+        elif ctx.author.id in [778438128527867915]: #cse2b
+            self.ttname="CSE II C"
             self.cse3_b1tt=res.cse2_c1
             self.cse3_b2tt=res.cse2_c2
             self.tableheaders=["9:30","10:30", "1:30", "2:30","3:30"]
+
 
             
 
@@ -125,9 +171,17 @@ class navi(commands.Cog):
         table1=[]
         table2=[]
         for i in self.cse3_b1tt.keys():
-            table1.append([i]+[self.cse3_b1tt[i][j]for j in range(len(self.tableheaders))])
+            if(i==self.day_order[str(self.today)]):
+                s=i+' -> '
+            else:
+                s=i
+            table1.append([s]+[self.cse3_b1tt[i][j]for j in range(len(self.tableheaders))])
         for i in self.cse3_b2tt.keys():
-            table2.append([i]+[self.cse3_b2tt[i][j]for j in range(len(self.tableheaders))])
+            if(i==self.day_order[str(self.today)]):
+                s=i+' -> '
+            else:
+                s=i
+            table2.append([s]+[self.cse3_b2tt[i][j]for j in range(len(self.tableheaders))])
 
         await menu(
             ctx,
@@ -158,8 +212,13 @@ class navi(commands.Cog):
         
         table1=[]
         
+        
         for i in self.mtechtt.keys():
-            table1.append([i]+[self.mtechtt[i][j]for j in range(4)])
+            if(i==self.day_order[str(self.today)]):
+                s=i+' -> '
+            else:
+                s=i
+            table1.append([s]+[self.mtechtt[i][j]for j in range(4)])
 
         await menu(
             ctx,
@@ -228,7 +287,14 @@ class navi(commands.Cog):
         self.today=date.today()
         self.time=datetime.now()#.strftime("%H:%M:%S")
         
+        
+        self.ttname="CSE III B"
+        self.li3=res.linkscse3b
+        self.cse3_b1tt=res.cse3_b1
+        self.cse3_b2tt=res.cse3_b2
+        self.tableheaders=["9:30","10:30", "1:30", "2:30"]
         if ctx.author.id in [453158855904591872]:#cse3b
+            self.ttname="CSE III B"
             self.li3=res.linkscse3b
             self.cse3_b1tt=res.cse3_b1
             self.cse3_b2tt=res.cse3_b2
@@ -238,11 +304,13 @@ class navi(commands.Cog):
         #elif ctx.author.id in [497379893592719360]: #aids
         #    await ctx.send("check")
         elif ctx.author.id in [650735047569047552]: #cse3c(sree)
+            self.ttname="CSE III C"
             self.li3=res.linkscse3c
             self.cse3_b1tt=res.cse3_c1
             self.cse3_b2tt=res.cse3_c2
             self.tableheaders=["9:30","10:30", "1:30", "2:30"]
         elif ctx.author.id in [778438128527867915]: #cse2b
+            self.ttname="CSE II B"
             self.li3=res.linkscse2c
             self.cse3_b1tt=res.cse2_c1
             self.cse3_b2tt=res.cse2_c2
@@ -319,7 +387,7 @@ class navi(commands.Cog):
 
     @link.command()
     async def cs(self,ctx):
-        """Displays the joining link of next class for Cse-B-III year"""
+        """Displays the joining link of next class for CSE"""
         #if(ctx.author.id):
         embs=[]
         
@@ -336,7 +404,7 @@ class navi(commands.Cog):
             embs.append(emb)
             
         else:
-            emb=discord.Embed(title="\tCSE-B B1 "+f"{self.day_order[str(d)]}")
+            emb=discord.Embed(title=self.ttname+" batch-1\n"+f"{self.day_order[str(d)]}")
             
             index=0
             while(index<len(self.tableheaders) and self.time.replace(hour=self.timestamp[index],minute=30,second=0)<self.time):
@@ -353,7 +421,7 @@ class navi(commands.Cog):
                     emb.add_field(name="Upcomming class",value=f"**{self.cse3_b1tt[self.day_order[str(d)]][index]}**\n *Start time:* {self.timestamp[index]}:30 \n [Google-Meet-link]({self.li3[self.cse3_b1tt[self.day_order[str(d)]][index]]})")
                 embs.append(emb)
                 
-                emb=discord.Embed(title="\tCSE-B B2 "+f"{self.day_order[str(d)]}")
+                emb=discord.Embed(title=self.ttname+" batch-2\n"+f"{self.day_order[str(d)]}")
                 if index!=0:
                     if(self.timestamp[index-1]+1<d1.hour or(self.timestamp[index-1]+1==d1.hour and d1.minute>=30)):
                         emb.add_field(name="Past class\t",value=f"**{self.cse3_b2tt[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-link]({self.li3[self.cse3_b2tt[self.day_order[str(d)]][index-1]]})")
@@ -433,6 +501,12 @@ class navi(commands.Cog):
         
 
     #rollnum cogs added here
+    @commands.command()
+    async def pnum(self,ctx,option):
+        emb = discord.Embed(title="Details")
+        emb.set_image(url=f"https://samwyc.codes/images/{option}.jpg")
+        await ctx.send(embed=emb)
+
     @commands.command()
     async def rnum(self,ctx,option):
         """displays the details of roll number provided"""

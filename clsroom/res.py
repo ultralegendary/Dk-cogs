@@ -11,7 +11,7 @@ def create_dates(sdate,edate):
         with open(r"g_class\resources\days.txt","a")as f:
             f.write(',\n'+str(day)+': ')
         print(day)
-        
+
 Mtechcs={
 "Day-1":["DS","CA","OS-LAB","OS-LAB"],
 "Day-2":["OOP","DAA","DS","OS"],
@@ -62,17 +62,15 @@ linkscse2c={
     'MS':'https://meet.google.com/lookup/awwqw6otky?authuser=1&hs=179',
     'MS-LAB':'https://meet.google.com/lookup/awwqw6otky?authuser=1&hs=179',
     'CA':'https://meet.google.com/lookup/dihoecr5x6?authuser=1&hs=179',
-    'DLD':'https://meet.google.com/lookup/aoyqpu6knt',
-    'DLD-LAB':'https://meet.google.com/lookup/gi4l2zqwgu',
-    'CADS':'https://meet.google.com/lookup/foag677pqn',
-    'CADS-LAB':'https://meet.google.com/lookup/fhechbx6ta',
-    'SEM':'https://meet.google.com/lookup/gcwwhxssgp',
-    'SEM-LAB':'https://meet.google.com/lookup/a5oudfavwj',
-    'OS':'https://meet.google.com/lookup/fohjgmbdoi',
-    'OS-LAB':'https://meet.google.com/lookup/cb7dm74tb7',
-    'MC':'https://meet.google.com/lookup/hi6nyyrn5d'
-
-
+    'DLD':'https://meet.google.com/lookup/aoyqpu6knt?authuser=1&hs=179',
+    'DLD-LAB':'https://meet.google.com/lookup/gi4l2zqwgu?authuser=1&hs=179',
+    'CADS':'https://meet.google.com/lookup/foag677pqn?authuser=1&hs=179',
+    'CADS-LAB':'https://meet.google.com/lookup/fhechbx6ta?authuser=1&hs=179',
+    'SEM':'https://meet.google.com/lookup/gcwwhxssgp?authuser=1&hs=179',
+    'SEM-LAB':'https://meet.google.com/lookup/a5oudfavwj?authuser=1&hs=179',
+    'OS':'https://meet.google.com/lookup/fohjgmbdoi?authuser=1&hs=179',
+    'OS-LAB':'https://meet.google.com/lookup/cb7dm74tb7?authuser=1&hs=179',
+    'MC':'https://meet.google.com/lookup/hi6nyyrn5d?authuser=1&hs=179'
 }
 cse3_b1= {
 "Day-1": ["MES","PL","TOC","OOAD"],
@@ -193,9 +191,9 @@ day_order={
 "2021-08-29":"Day-0",
 "2021-08-30":"Day-0",
 "2021-08-31":"Day-2",
-"2021-09-01":"Cia-1",
-"2021-09-02":"Cia-1",
-"2021-09-03":"Cia-1",
+"2021-09-01":"Day-3",
+"2021-09-02":"Day-4",
+"2021-09-03":"Day-5",
 "2021-09-04":"Day-0",
 "2021-09-05":"Day-0",
 "2021-09-06":"Day-6",
@@ -233,9 +231,9 @@ day_order={
 "2021-10-08":"Day-5",
 "2021-10-09":"Day-0",
 "2021-10-10":"Day-0",
-"2021-10-11":"Cia-2",
-"2021-10-12":"Cia-2",
-"2021-10-13":"Cia-2",
+"2021-10-11":"Day-6",
+"2021-10-12":"Day-1",
+"2021-10-13":"Day-2",
 "2021-10-14":"Day-0",
 "2021-10-15":"Day-0",
 "2021-10-16":"Day-0",
@@ -275,8 +273,8 @@ day_order={
 "2021-11-19":"Day-1",
 "2021-11-20":"Day-0",
 "2021-11-21":"Day-0",
-"2021-11-22":"Cia-3",
-"2021-11-23":"Cia-3",
-"2021-11-24":"Cia-3",
+"2021-11-22":"Day-2",
+"2021-11-23":"Day-3",
+"2021-11-24":"Day-4",
 "2021-11-25":"Day-0"
 }
