@@ -46,6 +46,8 @@ class navi(commands.Cog):
 
         self.title_map = {
             "cse3b": "CSE III-B",
+            "cse3c": "CSE III-C",
+            "cse2c": "CSE II-C",
             "mtech": "M.Tech",
             "aids": "AI/DS",
         }
@@ -85,12 +87,12 @@ class navi(commands.Cog):
 
     @commands.command()
     async def connect(self, ctx, dept, batch: int = None):
-        if dept not in ["cse3b", "mtech", "aids"]:
+        if dept not in self.mapper.keys():
             return await ctx.send(
-                "Invalid department. Please choose from `cse3b`, `mtech` or `aids`"
+                "Invalid department. Please choose from:\n"
+                + ", ".join(f"`{i}`" for i in self.mapper.keys())
             )
-        # TODO remove hardcode
-        if dept == "mtech":
+        if len(self.mapper[dept]) == 1:
             batch = 1
         elif not batch or batch not in (1, 2):
             return await ctx.send("Kindly enter whether batch 1 or 2")
@@ -122,14 +124,14 @@ class navi(commands.Cog):
             else:
                 return await ctx.send_help()
         else:
-            if dept not in ["cse3b", "mtech", "aids"]:
+            if dept not in self.mapper.keys():
                 return await ctx.send(
-                    "Invalid department. Please choose from `cse3b`, `mtech` or `aids`"
+                    "Invalid department. Please choose from:\n"
+                    + ", ".join(f"`{i}`" for i in self.mapper.keys())
                 )
-            # TODO remove hardcode
-            if dept == "mtech":
+            if len(self.mapper[dept]) == 1:
                 batch = 1
-            elif not batch:
+            elif not batch or batch not in (1, 2):
                 return await ctx.send(
                     f"Kindly enter whether batch 1 or 2, Example: {ctx.clean_prefix}{ctx.message.content.split(' ')[0]} aids 1"
                 )
@@ -157,9 +159,14 @@ class navi(commands.Cog):
     async def link(self, ctx, dept=None, batch: int = None):
         """Get the link to the gmeet of your department
 
-        Setup up link using `[p]connect` else give your department and batch number
+        Connect your class using `[p]connect` or else give your department and batch number
 
         Available departments:
+        - aids
+        - cse2c
+        - cse3b
+        - cse3c
+        - mtech
         """
         user_data = await self.config.user_from_id(ctx.author.id).all()
         if not dept:
@@ -169,14 +176,14 @@ class navi(commands.Cog):
             else:
                 return await ctx.send_help()
         else:
-            if dept not in ["cse3b", "mtech", "aids"]:
+            if dept not in self.mapper.keys():
                 return await ctx.send(
-                    "Invalid department. Please choose from `cse3b`, `mtech` or `aids`"
+                    "Invalid department. Please choose from:\n"
+                    + ", ".join(f"`{i}`" for i in self.mapper.keys())
                 )
-            # TODO remove hardcode
-            if dept == "mtech":
+            if len(self.mapper[dept]) == 1:
                 batch = 1
-            elif not batch:
+            elif not batch or batch not in (1, 2):
                 return await ctx.send("Kindly enter whether batch 1 or 2")
 
         # Prep stuff
@@ -190,11 +197,12 @@ class navi(commands.Cog):
         tmrw = time_now + dt.timedelta(days=1)
         while res.day_order[tmrw.strftime("%Y-%m-%d")][-1] == "0":
             tmrw += dt.timedelta(days=1)
+
+        # Hardcoded timedelta
         next_class_day = tmrw.replace(hour=9, minute=30) - time_now
 
         # Holiday
         if day_order[-1] == "0":
-            # Hardcoded timedelta
             emb = discord.Embed(
                 title="Holiday",
                 description=f"*Next class in* {cf.humanize_timedelta(timedelta=next_class_day)}",
@@ -212,7 +220,7 @@ class navi(commands.Cog):
             time_obj = time_now.time()
             # time_obj = dt.time(14, 28) - debug
 
-            # Getting period hour TODO hardcoded
+            # Before First class
             if time_obj < self.ref_time[0]:
                 subject = sub_obj[0]
                 emb.add_field(
