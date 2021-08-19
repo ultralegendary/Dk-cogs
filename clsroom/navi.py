@@ -85,8 +85,17 @@ class navi(commands.Cog):
         self.service = build('classroom', 'v1', credentials=self.creds)
     """
 
-    @commands.command()
+    @commands.command(aliases=["con"])
     async def connect(self, ctx, dept, batch: int = None):
+        """Connect to your class and batch to get the link instantneously while using [p]link or [p]timetable
+
+        Available departments:
+        - aids
+        - cse2c
+        - cse3b
+        - cse3c
+        - mtech
+        """
         if dept not in self.mapper.keys():
             return await ctx.send(
                 "Invalid department. Please choose from:\n"
@@ -111,6 +120,11 @@ class navi(commands.Cog):
         """`[p]timetable department` displays the timetable of the department
 
         Available departments:
+        - aids
+        - cse2c
+        - cse3b
+        - cse3c
+        - mtech
         """
 
         user_data = await self.config.user_from_id(ctx.author.id).all()
@@ -133,7 +147,7 @@ class navi(commands.Cog):
                 batch = 1
             elif not batch or batch not in (1, 2):
                 return await ctx.send(
-                    f"Kindly enter whether batch 1 or 2, Example: {ctx.clean_prefix}{ctx.message.content.split(' ')[0]} aids 1"
+                    f"Kindly enter whether batch 1 or 2\n Example: {ctx.message.content.split(' ')[0]} aids 1"
                 )
 
         if dept not in self.mapper:
@@ -144,14 +158,14 @@ class navi(commands.Cog):
                 [k + " -->" if day_order == k else k] + [period for period in v]
                 for k, v in self.get_sub_obj(dept, batch).items()
             ],
-            headers=["9:30", "10:30", "1:30", "2:30"],
+            headers=["", "9:30", "10:30", "1:30", "2:30", "3:30"],
             tablefmt="presto",
             colalign=("left",),
         )
 
         await menu(
             ctx,
-            [f"{self.title_map[dept]}  **Batch {batch}** TimeTable \n ```{table}```"],
+            [f"{self.title_map[dept]}  **Batch {batch}** TimeTable```{table}```"],
             {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]},
         )
 
@@ -218,7 +232,7 @@ class navi(commands.Cog):
 
             sub_obj = self.get_sub_obj(dept, batch)[day_order]
             time_obj = time_now.time()
-            # time_obj = dt.time(14, 28) - debug
+            # time_obj = dt.time(16, 28) #debug
 
             # Before First class
             if time_obj < self.ref_time[0]:
@@ -250,9 +264,9 @@ class navi(commands.Cog):
                             )
                         break
                 else:
-                    if time_obj < self.ref_time[-1]:
-                        # We are in the last hour
-                        subject = sub_obj[-1]
+                    subject = sub_obj[-1]
+                    # We are in the last hour
+                    if time_obj < self.ref_time[-1] and subject != "NILL":
                         emb.add_field(
                             name="Ongoing class",
                             value=f"**{subject}**\n *End time:* {self.ref_time[-1].isoformat(timespec='minutes')} \n [Google-Meet-link]({dept_links[subject]})",
