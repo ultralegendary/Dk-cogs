@@ -90,7 +90,7 @@ cse3_b2={
 }
 cse3_c1={
 "Day-1": ["PE1","PL","AI","MES"],
-"Day-2": ["TOC","PE2","MES","CN-LAB"],
+"Day-2": ["TOC","PE2","MES","DCN-LAB"],
 "Day-3": ["AI","TOC","DCN","PE1"],
 "Day-4": ["MES","MES-LAB","PE2","PL"],
 "Day-5": ["PE1","PE2","DCN","AI-LAB"],

@@ -126,47 +126,44 @@ class navi(commands.Cog):
 available classes: > aids2,cse3b,cse3c,cse2b,mtech2
         """
         if cls not in ['aids2','cse3b','cse3c','cse2b','mtech2']:
-            await ctx.send("Invalid class\navailable classes: > aids2,cse3b,cse3c,cse2b,mtech2")
+            await ctx.send_help()
         else:
             await self.config.user(ctx.author).cls.set(cls)
             await ctx.send("user registered with classid "+cls)
 
 
-    @commands.group()
+    @commands.command()
     async def timetable(self,ctx):
-        """`[p]timetable department` displays the timetable of the department"""
+        """`[p]timetable` displays the timetable registered under name"""
         self.today=date.today()
-        if ctx.author.id in [453158855904591872,497379893592719360]:#cse3b
+
+        if await self.config.user(ctx.author).cls()=='cse3b':#cse3b
             self.ttname="CSE III B"
             self.cse3_b1tt=res.cse3_b1
             self.cse3_b2tt=res.cse3_b2
             self.tableheaders=["9:30","10:30", "1:30", "2:30"]
-            
-
-        #elif ctx.author.id in [497379893592719360]: #aids
-        #    await ctx.send("check")
-        elif ctx.author.id in [650735047569047552]: #cse3c(sree)
+            await self.cse(ctx)
+        elif await self.config.user(ctx.author).cls()=='cse3c': #cse3c(sree)
             self.ttname="CSE III C"
             self.li3=res.linkscse3b
             self.cse3_b1tt=res.cse3_c1
             self.cse3_b2tt=res.cse3_c2
             self.tableheaders=["9:30","10:30", "1:30", "2:30"]
-        elif ctx.author.id in [778438128527867915]: #cse2b
+            await self.cse(ctx)
+        elif await self.config.user(ctx.author).cls()=='cse2b': #cse2b
             self.ttname="CSE II C"
             self.cse3_b1tt=res.cse2_c1
             self.cse3_b2tt=res.cse2_c2
             self.tableheaders=["9:30","10:30", "1:30", "2:30","3:30"]
+            await self.cse(ctx)
+        elif await self.config.user(ctx.author).cls()=='aids2':
+            await self.aids2(ctx)
+        elif await self.config.user(ctx.author).cls()=='mtech2':
+            await self.mtech(ctx)
 
-
-            
-
-
-        
-        
-        #sdate = date(*[int(i)for i in sdate.split('-')])
-        
-    @timetable.command()
-    async def cse(self,ctx):
+    #sdate = date(*[int(i)for i in sdate.split('-')])
+    
+    def cse(self,ctx):
         """Prints timetable of cse for registered users"""
         table1=[]
         table2=[]
@@ -183,7 +180,7 @@ available classes: > aids2,cse3b,cse3c,cse2b,mtech2
                 s=i
             table2.append([s]+[self.cse3_b2tt[i][j]for j in range(len(self.tableheaders))])
 
-        await menu(
+        return menu(
             ctx,
             [
                 self.ttname+f"```{i} ```" + f"**Batch {j+1}**" 
@@ -207,8 +204,8 @@ available classes: > aids2,cse3b,cse3c,cse2b,mtech2
             ],
             DEFAULT_CONTROLS,
             )
-    @timetable.command()
-    async def mtech(self,ctx):
+    
+    def mtech(self,ctx):
         
         table1=[]
         
@@ -220,7 +217,7 @@ available classes: > aids2,cse3b,cse3c,cse2b,mtech2
                 s=i
             table1.append([s]+[self.mtechtt[i][j]for j in range(4)])
 
-        await menu(
+        return menu(
             ctx,
             [
                 "*Mtech TimeTable*" + f"```{i} ```"
@@ -238,8 +235,8 @@ available classes: > aids2,cse3b,cse3c,cse2b,mtech2
             
             )
 
-    @timetable.command()
-    async def aids2(self,ctx):
+    
+    def aids2(self,ctx):
         """"""
         table1=[]
         table2=[]
@@ -254,10 +251,10 @@ available classes: > aids2,cse3b,cse3c,cse2b,mtech2
                 s=i+' -> '
             else:
                 s=i
-            table2.append([i]+[self.tt2[i][j]for j in range(5)])
+            table2.append([s]+[self.tt2[i][j]for j in range(5)])
         
 
-        await menu(
+        return menu(
             ctx,
             [
                 "*AIDS TimeTable*"+f"```{i} ```" + f"**Batch {j+1}**" 
@@ -281,46 +278,43 @@ available classes: > aids2,cse3b,cse3c,cse2b,mtech2
             DEFAULT_CONTROLS,
             )
     
-    @commands.group()
+    @commands.command()
     async def link(self,ctx):
         """`[p]link department` gives the clasroom meetlink of upcomming class"""
         self.today=date.today()
         self.time=datetime.now()#.strftime("%H:%M:%S")
         
-        
-        self.ttname="CSE III B"
-        self.li3=res.linkscse3b
-        self.cse3_b1tt=res.cse3_b1
-        self.cse3_b2tt=res.cse3_b2
-        self.tableheaders=["9:30","10:30", "1:30", "2:30"]
-        if ctx.author.id in [453158855904591872]:#cse3b
+        if await self.config.user(ctx.author).cls()=='cse3b':#cse3b
             self.ttname="CSE III B"
             self.li3=res.linkscse3b
             self.cse3_b1tt=res.cse3_b1
             self.cse3_b2tt=res.cse3_b2
             self.tableheaders=["9:30","10:30", "1:30", "2:30"]
-            
-
+            await self.cs(ctx)
         #elif ctx.author.id in [497379893592719360]: #aids
         #    await ctx.send("check")
-        elif ctx.author.id in [650735047569047552]: #cse3c(sree)
+        elif await self.config.user(ctx.author).cls()=='cse3c': #cse3c(sree)
             self.ttname="CSE III C"
             self.li3=res.linkscse3c
             self.cse3_b1tt=res.cse3_c1
             self.cse3_b2tt=res.cse3_c2
             self.tableheaders=["9:30","10:30", "1:30", "2:30"]
-        elif ctx.author.id in [778438128527867915]: #cse2b
+            await self.cs(ctx)
+        elif await self.config.user(ctx.author).cls()=='cse2b': #cse2b
             self.ttname="CSE II B"
             self.li3=res.linkscse2c
             self.cse3_b1tt=res.cse2_c1
             self.cse3_b2tt=res.cse2_c2
             self.tableheaders=["9:30","10:30", "1:30", "2:30","3:30"]
+            await self.cs(ctx)
+        elif await self.config.user(ctx.author).cls()=='mtech2': #cse2b
+            await self.mt(ctx)
+        elif await self.config.user(ctx.author).cls()=='aids2': #cse2b
+            await self.ai(ctx)
+        
 
         
-        
-        
-    @link.command()
-    async def ai(self,ctx,batch:int=None):
+    def ai(self,ctx,batch:int=None):
         """Displays the joining link of next class for AI-II year"""
         embs=[]
         
@@ -377,16 +371,21 @@ available classes: > aids2,cse3b,cse3c,cse2b,mtech2
                 embs.append(discord.Embed(title="End of "+self.day_order[str(d-timedelta(days=i+1))],description=f"*Next class in* {i} days, {9+24-d1.hour} hours"))
         
         if len(embs)>1:
-            await menu(
+            return menu(
                 ctx,
                 embs,
                 DEFAULT_CONTROLS,
                 )
         else:
-            await ctx.send(embed=embs[0])
+            #await ctx.send(embed=embs[0])
+            return menu(
+                ctx,
+                embs,
+                {}
+                )
 
-    @link.command()
-    async def cs(self,ctx):
+    
+    def cs(self,ctx):
         """Displays the joining link of next class for CSE"""
         #if(ctx.author.id):
         embs=[]
@@ -442,19 +441,21 @@ available classes: > aids2,cse3b,cse3c,cse2b,mtech2
                 embs.append(discord.Embed(title="End of "+self.day_order[str(d-timedelta(days=i+1))],description=f"*Next class in* {i} days, {9+24-d1.hour} hours"))
         
         if(len(embs)>1):
-            await menu(
+            return menu(
             ctx,
             embs,
             DEFAULT_CONTROLS,
             )
         else :
-            await ctx.send(embed=embs[0])
+            #await ctx.send(embed=embs[0])
+            return menu(
+            ctx,
+            embs,
+            {}
+            )
         
 
-
-    
-    @link.command()
-    async def mt(self,ctx,batch:int=None):
+    def mt(self,ctx,batch:int=None):
         """Displays the joining link of next class for MtechCse-II year"""
         
         
@@ -496,8 +497,13 @@ available classes: > aids2,cse3b,cse3c,cse2b,mtech2
                     d+=timedelta(days=1)
                     i+=1
                 emb=discord.Embed(title="End of "+self.day_order[str(d-timedelta(days=i+1))],description=f"*Next class in* {i} days, {9+24-d1.hour} hours")
-                
-        await ctx.send(embed=emb)
+
+        return menu(
+            ctx,
+            [emb],
+            {}
+            )       
+        #return ctx.send(embed=emb)
         
 
     #rollnum cogs added here
