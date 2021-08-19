@@ -258,10 +258,11 @@ class navi(commands.Cog):
                         # There exists a next class
                         if hr_index < len(sub_obj) - 1:
                             subject = sub_obj[hr_index + 1]
-                            emb.add_field(
-                                name="Upcoming class",
-                                value=f"**{subject}**\n Start time: `{self.ref_time[hr_index+1].strftime('%I:%M %p')}`\n [Google-Meet-link]({dept_links[subject]})",
-                            )
+                            if subject != "NILL":
+                                emb.add_field(
+                                    name="Upcoming class",
+                                    value=f"**{subject}**\n Start time: `{self.ref_time[hr_index+1].strftime('%I:%M %p')}`\n [Google-Meet-link]({dept_links[subject]})",
+                                )
                         break
                 else:
                     subject = sub_obj[-1]
