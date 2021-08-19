@@ -35,11 +35,19 @@ class navi(commands.Cog):
         )
         self.config.register_user(dept=None, batch=None)
 
-        self.ref_time = [9, 10, 13, 14, 15]
+        self.ref_time = [dt.time(hr, 30) for hr in [9, 10, 13, 14, 15]]
         self.mapper = {
-            "cse3b": [res.cse3_b1, res.cse3_b2],
+            "cse3b": [res.cse3b_b1, res.cse3b_b2],
+            "cse3c": [res.cse3c_b1, res.cse3c_b2],
+            "cse2c": [res.cse2c_b1, res.cse2c_b2],
             "mtech": [res.mtech],
             "aids": [res.aids_b1, res.aids_b2],
+        }
+
+        self.title_map = {
+            "cse3b": "CSE III-B",
+            "mtech": "M.Tech",
+            "aids": "AI/DS",
         }
 
         # rollnum things
@@ -84,7 +92,7 @@ class navi(commands.Cog):
         # TODO remove hardcode
         if dept == "mtech":
             batch = 1
-        elif not batch:
+        elif not batch or batch not in (1, 2):
             return await ctx.send("Kindly enter whether batch 1 or 2")
 
         async with self.config.user_from_id(ctx.author.id).all() as user_data:
@@ -101,11 +109,12 @@ class navi(commands.Cog):
         """`[p]timetable department` displays the timetable of the department
 
         Available departments:
-        - `cse3b`
-        - `mtech`
-        - `aids`"""
+        """
 
         user_data = await self.config.user_from_id(ctx.author.id).all()
+        time_now = dt.datetime.now(tz=gettz("Asia/Kolkata"))
+        day_order = res.day_order[time_now.strftime("%Y-%m-%d")]
+
         if not dept:
             if user_data["dept"] and user_data["batch"]:
                 dept = user_data["dept"]
@@ -121,13 +130,18 @@ class navi(commands.Cog):
             if dept == "mtech":
                 batch = 1
             elif not batch:
-                return await ctx.send("Kindly enter whether batch 1 or 2")
+                return await ctx.send(
+                    f"Kindly enter whether batch 1 or 2, Example: {ctx.clean_prefix}{ctx.message.content.split(' ')[0]} aids 1"
+                )
 
         if dept not in self.mapper:
             return await ctx.send_help()
 
         table = tabulate(
-            [[k] + [period for period in v] for k, v in self.get_sub_obj(dept, batch).items()],
+            [
+                [k + " -->" if day_order == k else k] + [period for period in v]
+                for k, v in self.get_sub_obj(dept, batch).items()
+            ],
             headers=["9:30", "10:30", "1:30", "2:30"],
             tablefmt="presto",
             colalign=("left",),
@@ -135,18 +149,18 @@ class navi(commands.Cog):
 
         await menu(
             ctx,
-            [f"{dept.upper()}  **Batch {batch}** TimeTable \n `{table}`"],
+            [f"{self.title_map[dept]}  **Batch {batch}** TimeTable \n ```{table}```"],
             {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]},
         )
 
     @commands.command(aliases=["links"])
     async def link(self, ctx, dept=None, batch: int = None):
-        """Setup up link using `[p]connect` else give your department and batch number
+        """Get the link to the gmeet of your department
+
+        Setup up link using `[p]connect` else give your department and batch number
 
         Available departments:
-        - `cse3b`
-        - `aids`
-        - `mtech`"""
+        """
         user_data = await self.config.user_from_id(ctx.author.id).all()
         if not dept:
             if user_data["dept"] and user_data["batch"]:
@@ -170,7 +184,6 @@ class navi(commands.Cog):
 
         # Getting correct time things
         time_now = dt.datetime.now(tz=gettz("Asia/Kolkata"))
-        time_now.replace(hour=time_now.hour + 1)
         day_order = res.day_order[time_now.strftime("%Y-%m-%d")]
 
         # Get next working day
@@ -190,50 +203,53 @@ class navi(commands.Cog):
             embs.append(emb)
         # Working day :(
         else:
-            emb = discord.Embed(title=f"{day_order} | Batch-{batch}")
-            emb.set_author(name=dept.upper())
+            emb = discord.Embed(color=await ctx.embed_color())
+            emb.set_footer(text=f"{day_order}  |  Batch-{batch}")
+            emb.set_author(name=self.title_map[dept])
             dept_links = getattr(res, dept + "_links")
-            # Getting period hour
-            if time_now.hour < self.ref_time[0]:
-                subject = self.get_sub_obj(dept, batch)[day_order][0]
+
+            sub_obj = self.get_sub_obj(dept, batch)[day_order]
+            time_obj = time_now.time()
+            # time_obj = dt.time(14, 28) - debug
+
+            # Getting period hour TODO hardcoded
+            if time_obj < self.ref_time[0]:
+                subject = sub_obj[0]
                 emb.add_field(
                     name="Upcomming class",
-                    value=f"**{subject}**\n *Start time:* {self.ref_time[0]}:30 \n [Google-Meet-link]({dept_links[subject]})",
+                    value=f"**{subject}**\n Start time: `{self.ref_time[0].isoformat(timespec='minutes')}`\n [Google-Meet-link]({dept_links[subject]})",
                 )
             else:
                 for hr_index in range(len(self.ref_time) - 1):
-                    if self.ref_time[hr_index] <= time_now.hour < self.ref_time[hr_index + 1]:
-
-                        # TODO Check this out later, time inbetweens are not working
-                        hr_index -= 1
-
-                        # If it's greater than 30mins then it's the next hour
-                        if time_now.minute > 30 and time_now.hour + 1 in self.ref_time:
-                            hr_index += 1
-
-                        subject = self.get_sub_obj(dept, batch)[day_order][hr_index]
+                    if self.ref_time[hr_index] <= time_obj < self.ref_time[hr_index + 1]:
+                        subject = sub_obj[hr_index]
+                        end_time = (
+                            dt.datetime.combine(dt.date.today(), self.ref_time[hr_index])
+                            + dt.timedelta(hours=1)
+                        ).time()
                         emb.add_field(
-                            name="Ongoing class",
-                            value=f"**{subject}**\n *End time:* {self.ref_time[hr_index+1]}:30 \n [Google-Meet-link]({dept_links[subject]})",
+                            name=("Ongoing" if end_time == self.ref_time[hr_index + 1] else "Past")
+                            + " class",
+                            value=f"**{subject}**\n End time: `{end_time.isoformat(timespec='minutes')}`\n [Google-Meet-link]({dept_links[subject]})",
                         )
-                        # There exists the next class
-                        if hr_index < len(self.get_sub_obj(dept, batch)[day_order]) - 1:
-                            subject = self.get_sub_obj(dept, batch)[day_order][hr_index + 1]
+
+                        # There exists a next class
+                        if hr_index < len(sub_obj) - 1:
+                            subject = sub_obj[hr_index + 1]
                             emb.add_field(
                                 name="Upcoming class",
-                                value=f"**{subject}**\n *Start time:* {self.ref_time[hr_index+1]}:30 \n [Google-Meet-link]({dept_links[subject]})",
+                                value=f"**{subject}**\n Start time: `{self.ref_time[hr_index+1].isoformat(timespec='minutes')}`\n [Google-Meet-link]({dept_links[subject]})",
                             )
                         break
                 else:
-                    # Likely Last hour TODO hardcoded
-                    if not (time_now.hour >= 15 and time_now.minute > 30):
-                        subject = self.get_sub_obj(dept, batch)[day_order][-1]
+                    if time_obj < self.ref_time[-1]:
+                        # We are in the last hour
+                        subject = sub_obj[-1]
                         emb.add_field(
                             name="Ongoing class",
-                            value=f"**{subject}**\n *End time:* {self.ref_time[-1]}:30 \n [Google-Meet-link]({dept_links[subject]})",
+                            value=f"**{subject}**\n *End time:* {self.ref_time[-1].isoformat(timespec='minutes')} \n [Google-Meet-link]({dept_links[subject]})",
                         )
 
-                # We are in the last hour
                 if len(emb.fields) <= 1:
                     emb.add_field(
                         name="End",
