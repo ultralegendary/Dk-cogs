@@ -87,7 +87,7 @@ cse3c_b2 = {
 cse3c_links = {
     "TOC": "https://meet.google.com/lookup/cssg54qozm?authuser=1&hs=179",
     "DCN": "https://meet.google.com/lookup/gl7ckyp4je?authuser=1&hs=179",
-    "DCN-LAB": "https://meet.google.com/lookup/a5ek2k3ykp?authuser=1&hs=179",
+    "CN-LAB": "https://meet.google.com/lookup/a5ek2k3ykp?authuser=1&hs=179",
     "AI": "https://meet.google.com/lookup/abmcib32u2?authuser=1&hs=179",
     "AI-LAB": "https://meet.google.com/lookup/abmcib32u2?authuser=1&hs=179",
     "PE1": "https://meet.google.com/lookup/gnmgayz63c?authuser=1&hs=179",
