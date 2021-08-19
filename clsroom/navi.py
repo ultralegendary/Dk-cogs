@@ -239,7 +239,7 @@ class navi(commands.Cog):
                 subject = sub_obj[0]
                 emb.add_field(
                     name="Upcomming class",
-                    value=f"**{subject}**\n Start time: `{self.ref_time[0].isoformat(timespec='minutes')}`\n [Google-Meet-link]({dept_links[subject]})",
+                    value=f"**{subject}**\n Start time: `{self.ref_time[0].strftime('%I:%M %p')}`\n [Google-Meet-link]({dept_links[subject]})",
                 )
             else:
                 for hr_index in range(len(self.ref_time) - 1):
@@ -252,7 +252,7 @@ class navi(commands.Cog):
                         emb.add_field(
                             name=("Ongoing" if end_time == self.ref_time[hr_index + 1] else "Past")
                             + " class",
-                            value=f"**{subject}**\n End time: `{end_time.isoformat(timespec='minutes')}`\n [Google-Meet-link]({dept_links[subject]})",
+                            value=f"**{subject}**\n End time: `{end_time.strftime('%I:%M %p')}`\n [Google-Meet-link]({dept_links[subject]})",
                         )
 
                         # There exists a next class
@@ -260,7 +260,7 @@ class navi(commands.Cog):
                             subject = sub_obj[hr_index + 1]
                             emb.add_field(
                                 name="Upcoming class",
-                                value=f"**{subject}**\n Start time: `{self.ref_time[hr_index+1].isoformat(timespec='minutes')}`\n [Google-Meet-link]({dept_links[subject]})",
+                                value=f"**{subject}**\n Start time: `{self.ref_time[hr_index+1].strftime('%I:%M %p')}`\n [Google-Meet-link]({dept_links[subject]})",
                             )
                         break
                 else:
@@ -269,7 +269,7 @@ class navi(commands.Cog):
                     if time_obj < self.ref_time[-1] and subject != "NILL":
                         emb.add_field(
                             name="Ongoing class",
-                            value=f"**{subject}**\n *End time:* {self.ref_time[-1].isoformat(timespec='minutes')} \n [Google-Meet-link]({dept_links[subject]})",
+                            value=f"**{subject}**\n *End time:* {self.ref_time[-1].strftime('%I:%M %p')} \n [Google-Meet-link]({dept_links[subject]})",
                         )
 
                 if len(emb.fields) <= 1:
