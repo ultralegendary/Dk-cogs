@@ -219,9 +219,15 @@ class navi(commands.Cog):
         if day_order[-1] == "0":
             emb = discord.Embed(
                 title="Holiday",
-                description=f"*Next class in* {cf.humanize_timedelta(timedelta=next_class_day)}",
+                description=f"Next class in {cf.humanize_timedelta(timedelta=next_class_day)}",
+                color=await ctx.embed_color(),
             )
-            emb.set_footer(text=day_order)
+
+            emb.set_footer(
+                text=f"Next day order {res.day_order[(time_now + next_class_day).strftime('%Y-%m-%d')]}"
+            )
+
+            # emb.add_field(name="Your first class on the next working day", value=sub[0])
             embs.append(emb)
         # Working day :(
         else:
@@ -280,14 +286,14 @@ class navi(commands.Cog):
                     )
             embs.append(emb)
 
-            # For now there is only one page, let's add more later
-            await menu(
-                ctx,
-                embs,
-                DEFAULT_CONTROLS
-                if len(embs) > 1
-                else {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]},
-            )
+        # For now there is only one page, let's add more later
+        await menu(
+            ctx,
+            embs,
+            DEFAULT_CONTROLS
+            if len(embs) > 1
+            else {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]},
+        )
 
     # rollnum cogs added here
     @commands.command()
