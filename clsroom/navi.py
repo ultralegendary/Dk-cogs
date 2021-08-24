@@ -19,6 +19,9 @@ from tabulate import tabulate
 import os.path
 from sys import path
 import time
+import requests
+from bs4 import BeautifulSoup
+import re
 
 from . import res
 
@@ -104,8 +107,8 @@ class navi(commands.Cog):
     async def con(self,ctx,cls:str,usrid:int):
         """Connect usrid to cls
         """
-        if cls not in ['aids2','cse3b','cse3c','cse2b','mtech2']:
-            await ctx.send("Invalid class\navailable classes: > aids2,cse3b,cse3c,cse2b,mtech2")
+        if cls not in ['aids2','cse3b','cse3c','cse2c','mtech2']:
+            await ctx.send("Invalid class\navailable classes: > aids2,cse3b,cse3c,cse2c,mtech2")
         else:
             await self.config.user_from_id(usrid).cls.set(cls)
             await ctx.send("user registered with classid "+cls)
@@ -123,9 +126,9 @@ class navi(commands.Cog):
     async def connect(self,ctx,cls:str):
         """Connect your id to timetable specified\n
 `[p]connect cse3c` Connects you to the CSE IIIrd Year C-section
-available classes: > aids2,cse3b,cse3c,cse2b,mtech2
+available classes: > aids2,cse3b,cse3c,cse2c,mtech2
         """
-        if cls not in ['aids2','cse3b','cse3c','cse2b','mtech2']:
+        if cls not in ['aids2','cse3b','cse3c','cse2c','mtech2']:
             await ctx.send_help()
         else:
             await self.config.user(ctx.author).cls.set(cls)
@@ -150,7 +153,7 @@ available classes: > aids2,cse3b,cse3c,cse2b,mtech2
             self.cse3_b2tt=res.cse3_c2
             self.tableheaders=["9:30","10:30", "1:30", "2:30"]
             await self.cse(ctx)
-        elif await self.config.user(ctx.author).cls()=='cse2b': #cse2b
+        elif await self.config.user(ctx.author).cls()=='cse2c': #cse2c
             self.ttname="CSE II C"
             self.cse3_b1tt=res.cse2_c1
             self.cse3_b2tt=res.cse2_c2
@@ -300,16 +303,16 @@ available classes: > aids2,cse3b,cse3c,cse2b,mtech2
             self.cse3_b2tt=res.cse3_c2
             self.tableheaders=["9:30","10:30", "1:30", "2:30"]
             await self.cs(ctx)
-        elif await self.config.user(ctx.author).cls()=='cse2b': #cse2b
-            self.ttname="CSE II B"
+        elif await self.config.user(ctx.author).cls()=='cse2c': #cse2c
+            self.ttname="CSE II C"
             self.li3=res.linkscse2c
             self.cse3_b1tt=res.cse2_c1
             self.cse3_b2tt=res.cse2_c2
             self.tableheaders=["9:30","10:30", "1:30", "2:30","3:30"]
             await self.cs(ctx)
-        elif await self.config.user(ctx.author).cls()=='mtech2': #cse2b
+        elif await self.config.user(ctx.author).cls()=='mtech2': #
             await self.mt(ctx)
-        elif await self.config.user(ctx.author).cls()=='aids2': #cse2b
+        elif await self.config.user(ctx.author).cls()=='aids2': #
             await self.ai(ctx)
         
 
@@ -325,7 +328,7 @@ available classes: > aids2,cse3b,cse3c,cse2b,mtech2
             d+=timedelta(days=1)
             j+=1
         if(d!=self.today):
-            emb=discord.Embed(title="Holiday",description=f"*Next class in* {j} days, {(9+24-d1.hour)%24} hours")
+            emb=discord.Embed(title="Holiday",description=f"*Next class in* {j} days, `{(9+24-d1.hour)%24}` hours")
             emb.set_footer(text=self.day_order[str(d)])
             embs.append(emb)
             
@@ -341,22 +344,22 @@ available classes: > aids2,cse3b,cse3c,cse2b,mtech2
                 d1=datetime.today()
                 if index!=0:
                     if(self.timestamp[index-1]+1<d1.hour or(self.timestamp[index-1]+1==d1.hour and d1.minute>=30)):
-                        emb.add_field(name="Past class\t",value=f"**{self.tt1[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-link]({self.li[self.tt1[self.day_order[str(d)]][index-1]]})")
+                        emb.add_field(name="Past class\t",value=f"**{self.tt1[self.day_order[str(d)]][index-1]}**\n *End time:* `{self.timestamp[index-1]+1}:30` \n [Google-Meet-link]({self.li[self.tt1[self.day_order[str(d)]][index-1]]})")
                     else:
-                        emb.add_field(name="Ongoing class\t",value=f"**{self.tt1[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-link]({self.li[self.tt1[self.day_order[str(d)]][index-1]]})")
+                        emb.add_field(name="Ongoing class\t",value=f"**{self.tt1[self.day_order[str(d)]][index-1]}**\n *End time:* `{self.timestamp[index-1]+1}:30` \n [Google-Meet-link]({self.li[self.tt1[self.day_order[str(d)]][index-1]]})")
                 if index !=5:
-                    emb.add_field(name="Upcomming class",value=f"**{self.tt1[self.day_order[str(d)]][index]}**\n *Start time:* {self.timestamp[index]}:30 \n [Google-Meet-link]({self.li[self.tt1[self.day_order[str(d)]][index]]})")
+                    emb.add_field(name="Upcomming class",value=f"**{self.tt1[self.day_order[str(d)]][index]}**\n *Start time:* `{self.timestamp[index]}:30` \n [Google-Meet-link]({self.li[self.tt1[self.day_order[str(d)]][index]]})")
                     
                 embs.append(emb)
                 emb=discord.Embed(title="\tAIDS B2 "+f"{self.day_order[str(d)]}")
                 
                 if index!=0:
                     if(self.timestamp[index-1]+1<d1.hour or(self.timestamp[index-1]+1==d1.hour and d1.minute>=30)):
-                        emb.add_field(name="Past class\t",value=f"**{self.tt2[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-link]({self.li[self.tt2[self.day_order[str(d)]][index-1]]})")
+                        emb.add_field(name="Past class\t",value=f"**{self.tt2[self.day_order[str(d)]][index-1]}**\n *End time:* `{self.timestamp[index-1]+1}:30` \n [Google-Meet-link]({self.li[self.tt2[self.day_order[str(d)]][index-1]]})")
                     else:
-                        emb.add_field(name="Ongoing class\t",value=f"**{self.tt2[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-Link]({self.li[self.tt2[self.day_order[str(d)]][index-1]]})")
+                        emb.add_field(name="Ongoing class\t",value=f"**{self.tt2[self.day_order[str(d)]][index-1]}**\n *End time:* `{self.timestamp[index-1]+1}:30` \n [Google-Meet-Link]({self.li[self.tt2[self.day_order[str(d)]][index-1]]})")
                 if index!=5:
-                    emb.add_field(name="Upcomming class",value=f"**{self.tt2[self.day_order[str(d)]][index]}**\n *Start time:* {self.timestamp[index]}:30 \n [Google-Meet-Link]({self.li[self.tt2[self.day_order[str(d)]][index]]})")
+                    emb.add_field(name="Upcomming class",value=f"**{self.tt2[self.day_order[str(d)]][index]}**\n *Start time:* `{self.timestamp[index]}:30` \n [Google-Meet-Link]({self.li[self.tt2[self.day_order[str(d)]][index]]})")
 
                 embs.append(emb)
 
@@ -368,7 +371,7 @@ available classes: > aids2,cse3b,cse3c,cse2b,mtech2
                     i+=1
                 
 
-                embs.append(discord.Embed(title="End of "+self.day_order[str(d-timedelta(days=i+1))],description=f"*Next class in* {i} days, {9+24-d1.hour} hours"))
+                embs.append(discord.Embed(title="End of "+self.day_order[str(d-timedelta(days=i+1))],description=f"*Next class in* {i} days, `{9+24-d1.hour}` hours"))
         
         if len(embs)>1:
             return menu(
@@ -397,7 +400,7 @@ available classes: > aids2,cse3b,cse3c,cse2b,mtech2
             j+=1
             d+=timedelta(days=1)
         if(d!=self.today):
-            emb=discord.Embed(title="Holiday",description=f"*Next class in* {j} days, {(9+24-d1.hour)%24} hours")
+            emb=discord.Embed(title="Holiday",description=f"*Next class in* {j} days, `{(9+24-d1.hour)%24}` hours")
             emb.set_footer(text=self.day_order[str(d)])
             
             embs.append(emb)
@@ -413,21 +416,21 @@ available classes: > aids2,cse3b,cse3c,cse2b,mtech2
                 d1=datetime.today()
                 if index!=0:
                     if(self.timestamp[index-1]+1<d1.hour or(self.timestamp[index-1]+1==d1.hour and d1.minute>=30)):
-                        emb.add_field(name="Past class\t",value=f"**{self.cse3_b1tt[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-link]({self.li3[self.cse3_b1tt[self.day_order[str(d)]][index-1]]})")
+                        emb.add_field(name="Past class\t",value=f"**{self.cse3_b1tt[self.day_order[str(d)]][index-1]}**\n *End time:* `{self.timestamp[index-1]+1}:30` \n [Google-Meet-link]({self.li3[self.cse3_b1tt[self.day_order[str(d)]][index-1]]})")
                     else:
-                        emb.add_field(name="Ongoing class\t",value=f"**{self.cse3_b1tt[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-link]({self.li3[self.cse3_b1tt[self.day_order[str(d)]][index-1]]})")
+                        emb.add_field(name="Ongoing class\t",value=f"**{self.cse3_b1tt[self.day_order[str(d)]][index-1]}**\n *End time:* `{self.timestamp[index-1]+1}:30` \n [Google-Meet-link]({self.li3[self.cse3_b1tt[self.day_order[str(d)]][index-1]]})")
                 if(index!=len(self.tableheaders)):
-                    emb.add_field(name="Upcomming class",value=f"**{self.cse3_b1tt[self.day_order[str(d)]][index]}**\n *Start time:* {self.timestamp[index]}:30 \n [Google-Meet-link]({self.li3[self.cse3_b1tt[self.day_order[str(d)]][index]]})")
+                    emb.add_field(name="Upcomming class",value=f"**{self.cse3_b1tt[self.day_order[str(d)]][index]}**\n *Start time:* `{self.timestamp[index]}:30` \n [Google-Meet-link]({self.li3[self.cse3_b1tt[self.day_order[str(d)]][index]]})")
                 embs.append(emb)
                 
                 emb=discord.Embed(title=self.ttname+" batch-2\n"+f"{self.day_order[str(d)]}")
                 if index!=0:
                     if(self.timestamp[index-1]+1<d1.hour or(self.timestamp[index-1]+1==d1.hour and d1.minute>=30)):
-                        emb.add_field(name="Past class\t",value=f"**{self.cse3_b2tt[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-link]({self.li3[self.cse3_b2tt[self.day_order[str(d)]][index-1]]})")
+                        emb.add_field(name="Past class\t",value=f"**{self.cse3_b2tt[self.day_order[str(d)]][index-1]}**\n *End time:* `{self.timestamp[index-1]+1}:30` \n [Google-Meet-link]({self.li3[self.cse3_b2tt[self.day_order[str(d)]][index-1]]})")
                     else:
-                        emb.add_field(name="Ongoing class\t",value=f"**{self.cse3_b2tt[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-Link]({self.li3[self.cse3_b2tt[self.day_order[str(d)]][index-1]]})")
+                        emb.add_field(name="Ongoing class\t",value=f"**{self.cse3_b2tt[self.day_order[str(d)]][index-1]}**\n *End time:* `{self.timestamp[index-1]+1}:30` \n [Google-Meet-Link]({self.li3[self.cse3_b2tt[self.day_order[str(d)]][index-1]]})")
                 if index!=len(self.tableheaders):
-                    emb.add_field(name="Upcomming class",value=f"**{self.cse3_b2tt[self.day_order[str(d)]][index]}**\n *Start time:* {self.timestamp[index]}:30 \n [Google-Meet-Link]({self.li3[self.cse3_b2tt[self.day_order[str(d)]][index]]})")
+                    emb.add_field(name="Upcomming class",value=f"**{self.cse3_b2tt[self.day_order[str(d)]][index]}**\n *Start time:* `{self.timestamp[index]}:30` \n [Google-Meet-Link]({self.li3[self.cse3_b2tt[self.day_order[str(d)]][index]]})")
                 embs.append(emb)
 
             else:
@@ -438,7 +441,7 @@ available classes: > aids2,cse3b,cse3c,cse2b,mtech2
                     d+=timedelta(days=1)
                     i+=1
                 
-                embs.append(discord.Embed(title="End of "+self.day_order[str(d-timedelta(days=i+1))],description=f"*Next class in* {i} days, {9+24-d1.hour} hours"))
+                embs.append(discord.Embed(title="End of "+self.day_order[str(d-timedelta(days=i+1))],description=f"*Next class in* {i} days, `{9+24-d1.hour}` hours"))
         
         if(len(embs)>1):
             return menu(
@@ -466,7 +469,7 @@ available classes: > aids2,cse3b,cse3c,cse2b,mtech2
             j+=1
             d+=timedelta(days=1)
         if(d!=self.today):
-            emb=discord.Embed(title="Holiday",description=f"*Next class in* {j} days, {(9+24-d1.hour)%24} hours")
+            emb=discord.Embed(title="Holiday",description=f"*Next class in* {j} days, `{(9+24-d1.hour)%24}` hours")
             emb.set_footer(text=self.day_order[str(d)])
             
             
@@ -482,12 +485,12 @@ available classes: > aids2,cse3b,cse3c,cse2b,mtech2
                 
                 if index!=0:
                     if(self.timestamp[index-1]+1<d1.hour or(self.timestamp[index-1]+1==d1.hour and d1.minute>=30)):
-                        emb.add_field(name="Past class\t",value=f"**{self.mtechtt[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-link]({self.li2[self.mtechtt[self.day_order[str(d)]][index-1]]})")
+                        emb.add_field(name="Past class\t",value=f"**{self.mtechtt[self.day_order[str(d)]][index-1]}**\n *End time:* `{self.timestamp[index-1]+1}:30` \n [Google-Meet-link]({self.li2[self.mtechtt[self.day_order[str(d)]][index-1]]})")
                     else:
-                        emb.add_field(name="Ongoing class\t",value=f"**{self.mtechtt[self.day_order[str(d)]][index-1]}**\n *End time:* {self.timestamp[index-1]+1}:30 \n [Google-Meet-Link]({self.li2[self.mtechtt[self.day_order[str(d)]][index-1]]})")
+                        emb.add_field(name="Ongoing class\t",value=f"**{self.mtechtt[self.day_order[str(d)]][index-1]}**\n *End time:* `{self.timestamp[index-1]+1}:30` \n [Google-Meet-Link]({self.li2[self.mtechtt[self.day_order[str(d)]][index-1]]})")
                 if(index!=4):
                     emb.add_field(name="Upcomming class",
-                        value=f"**{self.mtechtt[self.day_order[str(d)]][index]}**\n*Start time:* {self.timestamp[index]}:30 \n[Google-Meet-Link]({self.li2[self.mtechtt[self.day_order[str(d)]][index]]})")
+                        value=f"**{self.mtechtt[self.day_order[str(d)]][index]}**\n*Start time:* `{self.timestamp[index]}:30` \n[Google-Meet-Link]({self.li2[self.mtechtt[self.day_order[str(d)]][index]]})")
 
             else:
                 
@@ -496,7 +499,7 @@ available classes: > aids2,cse3b,cse3c,cse2b,mtech2
                 while(self.day_order[str(d)]=="Day-0"):
                     d+=timedelta(days=1)
                     i+=1
-                emb=discord.Embed(title="End of "+self.day_order[str(d-timedelta(days=i+1))],description=f"*Next class in* {i} days, {9+24-d1.hour} hours")
+                emb=discord.Embed(title="End of "+self.day_order[str(d-timedelta(days=i+1))],description=f"*Next class in* {i} days, `{9+24-d1.hour}` hours")
 
         return menu(
             ctx,
@@ -589,15 +592,149 @@ available classes: > aids2,cse3b,cse3c,cse2b,mtech2
             emb = discord.Embed(title="Details")
             emb.add_field(name="Name",value=d.iloc[0]["Name"])
             emb.add_field(name="DOB",value=d.iloc[0]["DOB"])
-            #emb.add_field(name="Mobile",value=d.iloc[0]["Student_cell"])
-            #emb.add_field(name="Email",value=d.iloc[0]["Email_id"])
-            #emb.add_field(name="Address",value=d.iloc[0]["Per_Address"])
+            emb.add_field(name="Mobile",value=d.iloc[0]["Student_cell"])
+            emb.add_field(name="Email",value=d.iloc[0]["Email_id"])
+            emb.add_field(name="Address",value=d.iloc[0]["Per_Address"])
             
-            emb.set_image(url=f"https://samwyc.codes/images/20euai{options:03}.jpg")
+            #emb.set_image(url=f"https://samwyc.codes/images/20euai{options:03}.jpg")
             await ctx.send(embed=emb,)
             
         except:
             await ctx.send("Not found")
+    
+    @commands.command()
+    async def resai(self,ctx,serialnum:int):
+        """display the result of semester happened in apr/mar"""
+        month={'Jan':'01',
+               'Feb':'02',
+               'Mar':'03',
+               'Apr':'04',
+               'May':'05',
+               'Jun':'06',
+               'Jul':'07',
+               'Aug':'08',
+               'Sep':'09',
+               'Oct':'10',
+               'Nov':'11',
+               'Dec':'12'
+               }
+
+        d=self.ai_data.loc[self.ai_data["S_No"]==serialnum]
+        
+        if len(d)==0:
+            await ctx.reply("Wrong serial number")
+            return
+        dd=str(d.iloc[0]["DOB"]).split('-')
+        dd[0],dd[1]=month[dd[1]],dd[0]
+        dd='/'.join(dd)
+        await self.result(ctx,f'20euai{serialnum:03}',dd)
+        
+        
+        
+        
+    
+    @commands.command()
+    async def result(self,ctx,rollnum:str,dob:str):
+        """display the result of semester happened in apr/mar"""
+        async with ctx.typing():
+            rollnum=rollnum.upper()
+            
+            dd=re.match('[0-9]{2}/[0-9]{2}/(1998|1999|2000|2001|2002|2003|2004)',dob)
+            if(dd==None):
+                await ctx.reply('Wrong dob Pattern')
+                return
+            
+            r_form_data={
+            "Srollno": rollnum,
+            "Password": dob
+            }
+            print(rollnum,dob)
+            r_headers={
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                    "Accept-Encoding": "gzip, deflate",
+                    "Accept-Language": "en-US,en;q=0.5",
+                    "Connection": "keep-alive",
+                    "Content-Length": "41",
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    #"Cookie": "ci_session=8geukb5t1h4t3nkqo82fa7l2l9ok49qi",
+                    "Host": "results.skcet.ac.in:612",
+                    "Origin":"http://results.skcet.ac.in:612",
+                    "Referer": "http://results.skcet.ac.in:612/",
+                    "Upgrade-Insecure-Requests": "1",
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0"	
+            }
+            r=requests.post('http://results.skcet.ac.in:612/index.php/Welcome/Login',data=r_form_data,headers=r_headers)
+            if(b"http://results.skcet.ac.in:612/assets/StudentImage/"+bytes(rollnum, encoding='utf8') not in r.content):
+                await ctx.reply("Wrond dob or rollnum: "+rollnum+","+dob)
+                return
+            
+            try:
+                r.cookies.get_dict()['ci_session']
+            except:
+                await ctx.reply("There was a error loading the details")
+                return
+            
+            r_headers1={
+                'Host':'results.skcet.ac.in:612',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.5',
+                #'Accept-Encoding': 'gzip, deflate',
+                'Connection': 'keep-alive',
+                'Referer': 'http://results.skcet.ac.in:612/index.php/Welcome/Login',
+                #'Cookie': 'ci_session=mtq22fefrtr9l6l8djcjircu375h0mro',
+                'Cookie': 'ci_session='+r.cookies.get_dict()['ci_session'],
+                'Upgrade-Insecure-Requests': '1',
+                }
+            
+            r1=requests.post('http://results.skcet.ac.in:612/index.php/Result',cookies=r.cookies,headers=r_headers1)
+            soup=BeautifulSoup(r1.content,"html.parser")
+            if soup.findAll('tr')==[]:
+                """expection with cookies"""
+                r_headers1={
+                'Host':'results.skcet.ac.in:612',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.5',
+                #'Accept-Encoding': 'gzip, deflate',
+                'Connection': 'keep-alive',
+                'Referer': 'http://results.skcet.ac.in:612/index.php/Welcome/Login',
+                
+                'Cookie': 'ci_session='+r.cookies.get_dict()['ci_session'],
+                'Upgrade-Insecure-Requests': '1',
+                }
+                r1=requests.post('http://results.skcet.ac.in:612/index.php/Result',cookies=r.cookies,headers=r_headers1)
+                soup=BeautifulSoup(r1.content,"html.parser")
+                if soup.findAll('tr')==[]:
+                    await ctx.reply("Temporarry fix broken")
+                    return
+                #await ctx.send(str(soup.text)[:1999])
+                #await ctx.send(str(soup.p.text))
+                #await ctx.reply(f"bru Literally,... The site dont have the result of {rollnum}")
+                
+            b=[]
+            for i in soup.findAll('tr'):
+                a=i.findAll('td')
+                s=[]
+                for j in a:
+                    if(len(j)==3):
+                        j=j.find('span').contents
+                    s.extend(j)
+                b.append(s)
+                
+
+
+                
+            try:
+                await ctx.send('***'+str(soup.p.text)+'***'+'```'+tabulate(
+                b[1:],
+                headers=b[0],
+                tablefmt="presto",
+                colalign=("left",))+'```')
+            except:
+                await ctx.send(f"Somthing went wrong at the last moment")
+                
+    
     '''
     @commands.command()
     async def classes(self,ctx,options:int):
@@ -631,7 +768,4 @@ available classes: > aids2,cse3b,cse3c,cse2b,mtech2
             await ctx.send(r+"\n".join([course['alternateLink']for course in courses]))
 
     
-
-        
-
 '''
