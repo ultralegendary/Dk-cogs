@@ -256,7 +256,11 @@ class navi(commands.Cog):
                             + dt.timedelta(hours=1)
                         ).time()
                         emb.add_field(
-                            name=("Ongoing" if end_time == self.ref_time[hr_index + 1] else "Past")
+                            name=(
+                                "Ongoing"
+                                if end_time > time_obj or end_time == self.ref_time[hr_index + 1]
+                                else "Past"
+                            )
                             + " class",
                             value=f"**{subject}**\n End time: `{end_time.strftime('%I:%M %p')}`\n [Google-Meet-link]({dept_links[subject]})",
                         )
