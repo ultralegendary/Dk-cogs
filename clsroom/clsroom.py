@@ -1,27 +1,23 @@
-from typing import Literal
 import datetime as dt
+import os
+import os.path
+import re
+import time
+from sys import path
+from typing import Literal
 
 import discord
-from redbot.core import commands
-from redbot.core.config import Config
-from redbot.core import config
-from redbot.core.utils import chat_formatting as cf
-from redbot.core.utils.menus import menu
-from redbot.core.utils.menus import DEFAULT_CONTROLS
-
 import pandas as pd
-import os
-from dateutil.tz import gettz
-from tabulate import tabulate
-import os.path
-from sys import path
-import time
 import requests
 from bs4 import BeautifulSoup
-import re
+from dateutil.tz import gettz
+from redbot.core import commands, config
+from redbot.core.config import Config
+from redbot.core.utils import chat_formatting as cf
+from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
+from tabulate import tabulate
 
 from . import res
-
 
 """
 from googleapiclient.discovery import build
@@ -32,7 +28,7 @@ RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 """
 
 
-class navi(commands.Cog):
+class ClsRoom(commands.Cog):
     """cog to maintain classroom things"""
 
     def __init__(self, bot):
