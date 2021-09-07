@@ -45,12 +45,24 @@ class navi(commands.Cog):
         )
         self.config.register_user(cls=None,batch=1,spam_dm=False)
         
+        self.mapper={
+            "cse3b": [res.cse3_b1, res.cse3_b2],
+            "cse3c": [res.cse3_c1, res.cse3_c2],
+            "cse2c": [res.cse2_c1, res.cse2_c2],
+            "mtech2": [res.mtech2],
+            "aids2": [res.aids2_b1, res.aids2_b2],
+        }
+        self.title_map = {
+            "cse3b": "CSE III-B",
+            "cse3c": "CSE III-C",
+            "cse2c": "CSE II-C",
+            "mtech2": "M.Tech II",
+            "aids2": "AIDS II",
+        }
+
         
         self.day_order=res.day_order
-        res.AIBatch1
-        self.tt1=res.AIBatch1
-        self.tt2=res.AIBatch2
-        self.mtechtt=res.Mtechcs
+        
         self.cse3_b1tt=res.cse3_b1
         self.cse3_b2tt=res.cse3_b2
         self.today=date.today()
@@ -63,7 +75,7 @@ class navi(commands.Cog):
         self.ttname="Unknown"
         self.t=self.today.ctime()
         self.timestamp=[9,10,13,14,15]
-        self.tableheaders=["9:30","10:30", "1:30", "2:30"]
+        self.tableheaders={4:["9:30","10:30", "1:30", "2:30"],5:["9:30","10:30", "1:30", "2:30","3:30"]}
 
 
         # rollnum things
@@ -72,25 +84,7 @@ class navi(commands.Cog):
         self.ai_data=pd.read_csv("Dk-cogs/clsroom/resource/ai.csv")
         
 
-    '''
-        self.SCOPES = ['https://www.googleapis.com/auth/classroom.courses.readonly']
-        self.creds=None
-        if os.path.exists('token.json'):
-            self.creds = Credentials.from_authorized_user_file('token.json', self.SCOPES)
-        # If there are no (valid) credentials available, let the user log in.
-        if not self.creds or not self.creds.valid:
-            if self.creds and self.creds.expired and self.creds.refresh_token:
-                self.creds.refresh(Request())
-            else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    'credentials.json', self.SCOPES)
-                self.creds = flow.run_local_server(port=0)
-            # Save the credentials for the next run
-            with open('token.json', 'w') as token:
-                token.write(self.creds.to_json())
-
-        self.service = build('classroom', 'v1', credentials=self.creds)
-    '''
+    
     
     @commands.command()
     @commands.is_owner()
@@ -115,8 +109,6 @@ class navi(commands.Cog):
         
         
     
-    @commands.command()
-    @commands.is_owner()
     async def con(self,ctx,cls:str,usrid:int):
         """Connect usrid to cls
         """
@@ -136,38 +128,82 @@ class navi(commands.Cog):
         
     
     @commands.command()
-    async def connect(self,ctx,cls:str):
-        """Connect your id to timetable specified\n
-`[p]connect cse3c` Connects you to the CSE IIIrd Year C-section
-available classes: > aids2,cse3b,cse3c,cse2c,mtech2
-        """
-        if cls not in ['aids2','cse3b','cse3c','cse2c','mtech2']:
-            await ctx.send_help()
-        else:
-            await self.config.user(ctx.author).cls.set(cls)
-            await ctx.send("user registered with classid "+cls)
+    async def connect(self,ctx,cls:str,batch:int):
+        """Connect to your class and batch to get the link instantneously while using `[p]link` or `[p]timetable`
+        Available departments:
+        - aids2
+        - cse2c
+        - cse3b
+        - cse3c
+        - mtech2"""
+        if cls not in self.mapper.keys():
+            return await ctx.send_help()
+        if len(self.mapper[cls])==1:
+            batch=1;
+        elif not batch or batch not in (1, 2):
+            return await ctx.send("Kindly enter whether batch 1 or 2")
+        
+        async with self.config.user_from_id(ctx.author.id).all() as user_data:
+            user_data["cls"] = cls
+            user_data["batch"] = batch
+        await ctx.send(f"user registered with class {cls} and batch {batch}")
 
 
     @commands.command()
     async def timetable(self,ctx):
-        """`[p]timetable` displays the timetable registered under name"""
+        """`[p]timetable` displays the timetable registered under a discord user
+Use `[p]connect` to register your class and batch"""
+
         self.today=date.today()
 
-        if await self.config.user_from_id(ctx.author.id).cls()=='cse3b':#cse3b
-            self.ttname="CSE III B"
+        async with self.config.user_from_id(ctx.author.id).all() as user_data:
+            cls=user_data["cls"]
+            batch=user_data["batch"]
+            self.tt=self.mapper[cls][batch-1]
+        
+        if cls==None:
+            return await ctx.send_help()
+
+        
+        table=[]
+        size=len(list(self.mapper[cls][batch-1].values())[0])
+        for i in self.mapper[cls][batch-1].keys():
+            s=i+(' -> 'if i==self.day_order[str(self.today)] else '')
+            table.append([s]+[*self.mapper[cls][batch-1][i]])
+        
+
+        return await menu(
+            ctx,
+            [
+                cls+f"```{i} ```" + f"**Batch {batch}**" 
+                for i in list([
+                    
+                        tabulate(
+                            table,
+                            headers=["", "9:30", "10:30", "1:30", "2:30", "3:30"],
+                            tablefmt="presto",
+                            colalign=("left",),
+                        )]
+                    
+                )
+            ],
+            {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]},
+            )
+    
+        if 8=='cse3b':#cse3b
+            
             self.cse3_b1tt=res.cse3_b1
             self.cse3_b2tt=res.cse3_b2
             self.tableheaders=["9:30","10:30", "1:30", "2:30"]
             await self.cse(ctx)
         elif await self.config.user_from_id(ctx.author.id).cls()=='cse3c': #cse3c(sree)
-            self.ttname="CSE III C"
-            self.li3=res.linkscse3b
+            
             self.cse3_b1tt=res.cse3_c1
             self.cse3_b2tt=res.cse3_c2
             self.tableheaders=["9:30","10:30", "1:30", "2:30"]
             await self.cse(ctx)
         elif await self.config.user_from_id(ctx.author.id).cls()=='cse2c': #cse2c
-            self.ttname="CSE II C"
+            
             self.cse3_b1tt=res.cse2_c1
             self.cse3_b2tt=res.cse2_c2
             self.tableheaders=["9:30","10:30", "1:30", "2:30","3:30"]
@@ -181,6 +217,7 @@ available classes: > aids2,cse3b,cse3c,cse2c,mtech2
     
     def cse(self,ctx):
         """Prints timetable of cse for registered users"""
+        
         table1=[]
         table2=[]
         for i in self.cse3_b1tt.keys():
@@ -195,7 +232,9 @@ available classes: > aids2,cse3b,cse3c,cse2c,mtech2
             else:
                 s=i
             table2.append([s]+[self.cse3_b2tt[i][j]for j in range(len(self.tableheaders))])
-
+        
+        
+        
         return menu(
             ctx,
             [
@@ -220,6 +259,7 @@ available classes: > aids2,cse3b,cse3c,cse2c,mtech2
             ],
             DEFAULT_CONTROLS,
             )
+
     
     def mtech(self,ctx):
         
@@ -543,7 +583,7 @@ make sure to `[p]connect` before using this command
     async def pnum(self,ctx,option):
         emb = discord.Embed(title="Details")
         emb.set_image(url=f"https://samwyc.codes/images/{option}.jpg")
-        await ctx.send(embed=emb)
+        await menu(ctx,emb,{"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]})
 
     @commands.command()
     async def rnum(self,ctx,option):
@@ -558,7 +598,7 @@ make sure to `[p]connect` before using this command
             emb.add_field(name="Department",value=d.iloc[0]["dept"])
             emb.add_field(name="Roll No",value=d.iloc[0]["r_no"])
             emb.set_image(url=f"https://samwyc.codes/images/{option}.jpg")
-            await ctx.send(embed=emb)
+            await menu(ctx,emb,{"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]})
             """
             res='''`Name` {n} {n1}\n`Dept` {d1}\n`Roll` {r}'''.format(n=(d.iloc[0])["name"],n1=(d.iloc[0])["s_name"],d1=(d.iloc[0])["dept"],r=(d.iloc[0])["r_no"])
             await ctx.send(res)"""
@@ -626,7 +666,7 @@ make sure to `[p]connect` before using this command
             emb.add_field(name="Address",value=d.iloc[0]["Per_Address"])
             
             #emb.set_image(url=f"https://samwyc.codes/images/20euai{options:03}.jpg")
-            await ctx.send(embed=emb,)
+            await menu(ctx,emb,{"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]})
             
         except:
             await ctx.send("Not found")

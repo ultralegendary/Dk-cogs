@@ -12,7 +12,7 @@ def create_dates(sdate,edate):
             f.write(',\n'+str(day)+': ')
         print(day)
 
-Mtechcs={
+mtech2={
 "Day-1":["DS","CA","OS-LAB","OS-LAB"],
 "Day-2":["OOP","DAA","DS","OS"],
 "Day-3":["OS","CA","DAA","AC"],
@@ -123,7 +123,7 @@ cse2_c2={
 "Day-6":["MS","SEM","DLD-LAB","DLD-LAB","MC"]
 }
 
-AIBatch1={
+aids2_b1={
 #time  9:30,10:30,1:30,2:30,3:30
 "Day-1":["MS","DAA","OOP","FOS","NILL"],
 "Day-2":["DBMS","MS","AI","DBMS-LAB","NILL"],
@@ -132,7 +132,7 @@ AIBatch1={
 "Day-5":["AI","DBMS","MS","FOS","MC"],
 "Day-6":["DAA","AI","OOP-LAB","OOP-LAB","NILL"]
 }
-AIBatch2={
+aids2_b2={
 "Day-1":["DBMS","OOP","FOS","MS","NILL"],
 "Day-2":["DAA","FOS","OOP-LAB","OOP-LAB","NILL"],
 "Day-3":["MS","AI","DAA","FOS-LAB","FOS-LAB"],
