@@ -4,13 +4,22 @@ import datetime as dt
 import discord
 from redbot.core import commands
 from redbot.core.config import Config
+from redbot.core import config
 from redbot.core.utils import chat_formatting as cf
 from redbot.core.utils.menus import menu
 from redbot.core.utils.menus import DEFAULT_CONTROLS
+
 import pandas as pd
 import os
 from dateutil.tz import gettz
 from tabulate import tabulate
+import os.path
+from sys import path
+import time
+import requests
+from bs4 import BeautifulSoup
+import re
+
 from . import res
 
 
@@ -19,8 +28,8 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-"""
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
+"""
 
 
 class navi(commands.Cog):
@@ -31,7 +40,7 @@ class navi(commands.Cog):
         self.config = Config.get_conf(
             self,
             identifier=12345,
-            force_registration=True,
+            force_registration=False,
         )
         self.config.register_user(dept=None, batch=None)
 
@@ -115,6 +124,13 @@ class navi(commands.Cog):
             + (f" and batch {batch}" if batch else "")
         )
 
+    # Util function to get subject_object
+    def get_sub_obj(self, dept, batch=None):
+        mini = self.mapper[dept]
+        if not batch:
+            batch = 1
+        return mini[batch - 1]
+
     @commands.command(aliases=["tt"])
     async def timetable(self, ctx, dept: str = None, batch: int = None):
         """`[p]timetable department` displays the timetable of the department
@@ -163,7 +179,7 @@ class navi(commands.Cog):
             colalign=("left",),
         )
 
-        await menu(
+        return await menu(
             ctx,
             [f"{self.title_map[dept]}  **Batch {batch}** TimeTable```{table}```"],
             {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]},
@@ -301,7 +317,13 @@ class navi(commands.Cog):
 
     # rollnum cogs added here
     @commands.command()
-    async def rnumnew(self, ctx, option):
+    async def pnum(self, ctx, option):
+        emb = discord.Embed(title="Details")
+        emb.set_image(url=f"https://samwyc.codes/images/{option}.jpg")
+        await menu(ctx, [emb], {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]})
+
+    @commands.command()
+    async def rnum(self, ctx, option):
         """displays the details of roll number provided"""
         o = option.upper()
         # data.loc[data["r_no"]=='17EUCS001']
@@ -309,11 +331,13 @@ class navi(commands.Cog):
         d = self.data.loc[self.data["r_no"] == o]
         if len(d):
             emb = discord.Embed(title="Details")
-            emb.add_field(name="Name", value=d.iloc[0]["name"] + " " + d.iloc[0]["s_name"])
+            emb.add_field(
+                name="Name", value=str(d.iloc[0]["name"]) + " " + str(d.iloc[0]["s_name"])
+            )
             emb.add_field(name="Department", value=d.iloc[0]["dept"])
             emb.add_field(name="Roll No", value=d.iloc[0]["r_no"])
             emb.set_image(url=f"https://samwyc.codes/images/{option}.jpg")
-            await ctx.send(embed=emb)
+            await menu(ctx, [emb], {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]})
             """
             res='''`Name` {n} {n1}\n`Dept` {d1}\n`Roll` {r}'''.format(n=(d.iloc[0])["name"],n1=(d.iloc[0])["s_name"],d1=(d.iloc[0])["dept"],r=(d.iloc[0])["r_no"])
             await ctx.send(res)"""
@@ -322,7 +346,7 @@ class navi(commands.Cog):
 
     @commands.command()
     async def sname(self, ctx, option):
-        """search by name """
+        """search by name"""
         a = option.upper()
         # d=self.data.loc[self.data["name"]==a]
         d = self.data[self.data["name"].str.contains(a, na=False)]
@@ -343,37 +367,21 @@ class navi(commands.Cog):
 
         i = len(table)
         if i:
-            n = len(
-                list(
-                    cf.pagify(
-                        tabulate(
-                            table,
-                            headers=["Sno", "Name", "Department", "Roll no"],
-                            tablefmt="presto",
-                            colalign=("left",),
-                        ),
-                        page_length=1900,
-                    )
+            li = list(
+                cf.pagify(
+                    tabulate(
+                        table,
+                        headers=["Sno", "Name", "Department", "Roll no"],
+                        tablefmt="presto",
+                        colalign=("left",),
+                    ),
+                    page_length=1900,
                 )
             )
+            n = len(li)
             await menu(
                 ctx,
-                [
-                    f"```{i} ```" + f"** > Page {j+1} / {n}**"
-                    for j, i in enumerate(
-                        list(
-                            cf.pagify(
-                                tabulate(
-                                    table,
-                                    headers=["Sno", "Name", "Department", "Roll no"],
-                                    tablefmt="presto",
-                                    colalign=("left",),
-                                ),
-                                page_length=1900,
-                            )
-                        )
-                    )
-                ],
+                [f"```{i} ```" + f"**> Page {j+1} / {n}**" for j, i in enumerate(li)],
                 DEFAULT_CONTROLS,
             )
         else:
@@ -390,18 +398,157 @@ class navi(commands.Cog):
             emb = discord.Embed(title="Details")
             emb.add_field(name="Name", value=d.iloc[0]["Name"])
             emb.add_field(name="DOB", value=d.iloc[0]["DOB"])
+            emb.add_field(name="Mobile", value=d.iloc[0]["Student_cell"])
+            emb.add_field(name="Email", value=d.iloc[0]["Email_id"])
+            emb.add_field(name="Address", value=d.iloc[0]["Per_Address"])
 
-            emb.set_image(url=f"https://samwyc.codes/images/20euai{options:03}.jpg")
-            await ctx.send(embed=emb)
+            # emb.set_image(url=f"https://samwyc.codes/images/20euai{options:03}.jpg")
+            await menu(ctx, [emb], {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]})
 
         except:
             await ctx.send("Not found")
 
-    def get_sub_obj(self, dept, batch=None):
-        mini = self.mapper[dept]
-        if not batch:
-            batch = 1
-        return mini[batch - 1]
+    @commands.command()
+    async def resai(self, ctx, serialnum: int):
+        """display the result of semester happened in apr/mar"""
+        month = {
+            "Jan": "01",
+            "Feb": "02",
+            "Mar": "03",
+            "Apr": "04",
+            "May": "05",
+            "Jun": "06",
+            "Jul": "07",
+            "Aug": "08",
+            "Sep": "09",
+            "Oct": "10",
+            "Nov": "11",
+            "Dec": "12",
+        }
+
+        d = self.ai_data.loc[self.ai_data["S_No"] == serialnum]
+
+        if len(d) == 0:
+            await ctx.reply("Wrong serial number")
+            return
+        dd = str(d.iloc[0]["DOB"]).split("-")
+        dd[0], dd[1] = month[dd[1]], dd[0]
+        dd = "/".join(dd)
+        await self.result(ctx, f"20euai{serialnum:03}", dd)
+
+    @commands.command()
+    async def result(self, ctx, rollnum: str, dob: str):
+        """display the result of semester happened in apr/mar"""
+        async with ctx.typing():
+            rollnum = rollnum.upper()
+
+            dd = re.match("[0-9]{2}/[0-9]{2}/(1998|1999|2000|2001|2002|2003|2004)", dob)
+            if dd == None:
+                await ctx.reply("Wrong dob Pattern")
+                return
+
+            r_form_data = {"Srollno": rollnum, "Password": dob}
+
+            r_headers = {
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                "Accept-Encoding": "gzip, deflate",
+                "Accept-Language": "en-US,en;q=0.5",
+                "Connection": "keep-alive",
+                "Content-Length": "41",
+                "Content-Type": "application/x-www-form-urlencoded",
+                # "Cookie": "ci_session=8geukb5t1h4t3nkqo82fa7l2l9ok49qi",
+                "Host": "results.skcet.ac.in:612",
+                "Origin": "http://results.skcet.ac.in:612",
+                "Referer": "http://results.skcet.ac.in:612/",
+                "Upgrade-Insecure-Requests": "1",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0",
+            }
+            r = requests.post(
+                "http://results.skcet.ac.in:612/index.php/Welcome/Login",
+                data=r_form_data,
+                headers=r_headers,
+            )
+            if (
+                b"http://results.skcet.ac.in:612/assets/StudentImage/"
+                + bytes(rollnum, encoding="utf8")
+                not in r.content
+            ):
+                await ctx.reply("Wrond dob or rollnum: " + rollnum + "," + dob)
+                return
+
+            try:
+                r.cookies.get_dict()["ci_session"]
+            except:
+                await ctx.reply("There was a error loading the details")
+                return
+
+            r_headers1 = {
+                "Host": "results.skcet.ac.in:612",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.5",
+                #'Accept-Encoding': 'gzip, deflate',
+                "Connection": "keep-alive",
+                "Referer": "http://results.skcet.ac.in:612/index.php/Welcome/Login",
+                #'Cookie': 'ci_session=mtq22fefrtr9l6l8djcjircu375h0mro',
+                "Cookie": "ci_session=" + r.cookies.get_dict()["ci_session"],
+                "Upgrade-Insecure-Requests": "1",
+            }
+
+            r1 = requests.post(
+                "http://results.skcet.ac.in:612/index.php/Result",
+                cookies=r.cookies,
+                headers=r_headers1,
+            )
+            soup = BeautifulSoup(r1.content, "html.parser")
+            if soup.findAll("tr") == []:
+                """expection with cookies"""
+                r_headers1 = {
+                    "Host": "results.skcet.ac.in:612",
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0",
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                    "Accept-Language": "en-US,en;q=0.5",
+                    #'Accept-Encoding': 'gzip, deflate',
+                    "Connection": "keep-alive",
+                    "Referer": "http://results.skcet.ac.in:612/index.php/Welcome/Login",
+                    #'Cookie': 'ci_session='+r.cookies.get_dict()['ci_session'],
+                    "Cookie": "ci_session=mtq22fefrtr9l6l8djcjircu375h0mro",
+                    "Upgrade-Insecure-Requests": "1",
+                }
+                r1 = requests.post(
+                    "http://results.skcet.ac.in:612/index.php/Result",
+                    cookies=r.cookies,
+                    headers=r_headers1,
+                )
+                soup = BeautifulSoup(r1.content, "html.parser")
+                if soup.findAll("tr") == []:
+                    await ctx.reply("Temporarry fix broken")
+                    return
+                # await ctx.send(str(soup.text)[:1999])
+                # await ctx.send(str(soup.p.text))
+                # await ctx.reply(f"bru Literally,... The site dont have the result of {rollnum}")
+
+            b = []
+            for i in soup.findAll("tr"):
+                a = i.findAll("td")
+                s = []
+                for j in a:
+                    if len(j) == 3:
+                        j = j.find("span").contents
+                    s.extend(j)
+                b.append(s)
+
+            try:
+                await ctx.send(
+                    "***"
+                    + soup.p.text
+                    + "***"
+                    + "```"
+                    + tabulate(b[1:], headers=b[0], tablefmt="presto", colalign=("left",))
+                    + "```"
+                )
+            except:
+                await ctx.send(f"Somthing went wrong at the last moment")
 
     '''
     @commands.command()
@@ -436,7 +583,4 @@ class navi(commands.Cog):
             await ctx.send(r+"\n".join([course['alternateLink']for course in courses]))
 
     
-
-        
-
 '''

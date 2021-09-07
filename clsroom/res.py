@@ -65,6 +65,18 @@ cse3b_links = {
     "CN-LAB": "https://meet.google.com/lookup/cvkrksow2c?authuser=0&hs=179",
     "PL": "https://youtube.com/watch?v=dQw4w9WgXcQ",
 }
+linkscse3c = {
+    "TOC": "https://meet.google.com/lookup/cssg54qozm?authuser=1&hs=179",
+    "DCN": "https://meet.google.com/lookup/gl7ckyp4je?authuser=1&hs=179",
+    "DCN-LAB": "https://meet.google.com/lookup/a5ek2k3ykp?authuser=1&hs=179",
+    "AI": "https://meet.google.com/lookup/abmcib32u2?authuser=1&hs=179",
+    "AI-LAB": "https://meet.google.com/lookup/abmcib32u2?authuser=1&hs=179",
+    "PE1": "https://meet.google.com/lookup/gnmgayz63c?authuser=1&hs=179",
+    "MES": " https://meet.google.com/lookup/boyuqmfxqm?authuser=1&hs=179",
+    "MES-LAB": "https://meet.google.com/lookup/gqfeoictnj?authuser=1&hs=179",
+    "PE2": "https://meet.google.com/lookup/cy5q5hmd6e?authuser=1&hs=179",
+    "Mini Project": "https://meet.google.com/lookup/eljjxxguwn?authuser=1&hs=179",
+}
 
 # CSE 3c
 cse3c_b1 = {
