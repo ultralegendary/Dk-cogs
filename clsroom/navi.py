@@ -8,11 +8,10 @@ from redbot.core.bot import Red
 from redbot.core.commands.commands import group
 from redbot.core.config import Config
 from redbot.core import config
-
-
 from redbot.core.utils import chat_formatting as cf
 from redbot.core.utils.menus import menu
 from redbot.core.utils.menus import DEFAULT_CONTROLS
+
 import pandas as pd
 import os
 from tabulate import tabulate
@@ -30,8 +29,9 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-'''
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
+'''
+
 
 class navi(commands.Cog):
     """cog to maintain classroom things"""
@@ -43,7 +43,7 @@ class navi(commands.Cog):
             identifier=12345,
             force_registration=False,
         )
-        self.config.register_user(cls=None)
+        self.config.register_user(cls=None,batch=1,spam_dm=False)
         
         
         self.day_order=res.day_order
@@ -100,10 +100,23 @@ class navi(commands.Cog):
         else:
             await ctx.send("Noting registered under this user")
 
+    @commands.is_owner()
+    @commands.command()
+    async def send_dm(self,ctx):
+        usrs=await self.config.all_users()
+        #for id,usr in usrs.items():
+#            if usr['spam_dm']:
+        id=497379893592719360
+        await self.bot.get_user(id).send(self.link(ctx,id))
 
+        await ctx.send(f"{ctx.message}")
+
+        pass
+        
+        
+    
     @commands.command()
     @commands.is_owner()
-    
     async def con(self,ctx,cls:str,usrid:int):
         """Connect usrid to cls
         """
@@ -140,28 +153,28 @@ available classes: > aids2,cse3b,cse3c,cse2c,mtech2
         """`[p]timetable` displays the timetable registered under name"""
         self.today=date.today()
 
-        if await self.config.user(ctx.author).cls()=='cse3b':#cse3b
+        if await self.config.user_from_id(ctx.author.id).cls()=='cse3b':#cse3b
             self.ttname="CSE III B"
             self.cse3_b1tt=res.cse3_b1
             self.cse3_b2tt=res.cse3_b2
             self.tableheaders=["9:30","10:30", "1:30", "2:30"]
             await self.cse(ctx)
-        elif await self.config.user(ctx.author).cls()=='cse3c': #cse3c(sree)
+        elif await self.config.user_from_id(ctx.author.id).cls()=='cse3c': #cse3c(sree)
             self.ttname="CSE III C"
             self.li3=res.linkscse3b
             self.cse3_b1tt=res.cse3_c1
             self.cse3_b2tt=res.cse3_c2
             self.tableheaders=["9:30","10:30", "1:30", "2:30"]
             await self.cse(ctx)
-        elif await self.config.user(ctx.author).cls()=='cse2c': #cse2c
+        elif await self.config.user_from_id(ctx.author.id).cls()=='cse2c': #cse2c
             self.ttname="CSE II C"
             self.cse3_b1tt=res.cse2_c1
             self.cse3_b2tt=res.cse2_c2
             self.tableheaders=["9:30","10:30", "1:30", "2:30","3:30"]
             await self.cse(ctx)
-        elif await self.config.user(ctx.author).cls()=='aids2':
+        elif await self.config.user_from_id(ctx.author.id).cls()=='aids2':
             await self.aids2(ctx)
-        elif await self.config.user(ctx.author).cls()=='mtech2':
+        elif await self.config.user_from_id(ctx.author.id).cls()=='mtech2':
             await self.mtech(ctx)
 
     #sdate = date(*[int(i)for i in sdate.split('-')])
@@ -281,39 +294,55 @@ available classes: > aids2,cse3b,cse3c,cse2c,mtech2
             DEFAULT_CONTROLS,
             )
     
-    @commands.command()
-    async def link(self,ctx):
-        """`[p]link department` gives the clasroom meetlink of upcomming class"""
+    
+    @commands.command(usage="")
+    async def link(self,ctx,usr:int=None):
+        """`[p]link` gives the clasroom meetlink of upcomming class
+make sure to `[p]connect` before using this command
+`[p]connect <department>` to connect to you class"""
+        dm=True
+        if not usr:
+            usr=ctx.author.id
+            dm=False
+
         self.today=date.today()
         self.time=datetime.now()#.strftime("%H:%M:%S")
         
-        if await self.config.user(ctx.author).cls()=='cse3b':#cse3b
+        if await self.config.user_from_id(ctx.author).cls()=='cse3b':#cse3b
             self.ttname="CSE III B"
             self.li3=res.linkscse3b
             self.cse3_b1tt=res.cse3_b1
             self.cse3_b2tt=res.cse3_b2
             self.tableheaders=["9:30","10:30", "1:30", "2:30"]
-            await self.cs(ctx)
-        #elif ctx.author.id in [497379893592719360]: #aids
+            m=self.cs(ctx)
+        #elif ctx.author.id.id in [497379893592719360]: #aids
         #    await ctx.send("check")
-        elif await self.config.user(ctx.author).cls()=='cse3c': #cse3c(sree)
+        elif await self.config.user_from_id(ctx.author.id).cls()=='cse3c': #cse3c(sree)
             self.ttname="CSE III C"
             self.li3=res.linkscse3c
             self.cse3_b1tt=res.cse3_c1
             self.cse3_b2tt=res.cse3_c2
             self.tableheaders=["9:30","10:30", "1:30", "2:30"]
-            await self.cs(ctx)
-        elif await self.config.user(ctx.author).cls()=='cse2c': #cse2c
+            m=self.cs(ctx)
+        elif await self.config.user_from_id(ctx.author.id).cls()=='cse2c': #cse2c
             self.ttname="CSE II C"
             self.li3=res.linkscse2c
             self.cse3_b1tt=res.cse2_c1
             self.cse3_b2tt=res.cse2_c2
             self.tableheaders=["9:30","10:30", "1:30", "2:30","3:30"]
-            await self.cs(ctx)
-        elif await self.config.user(ctx.author).cls()=='mtech2': #
-            await self.mt(ctx)
-        elif await self.config.user(ctx.author).cls()=='aids2': #
-            await self.ai(ctx)
+            m=self.cs(ctx)
+        elif await self.config.user_from_id(ctx.author.id).cls()=='mtech2': #
+            m=self.mt(ctx)
+        elif await self.config.user_from_id(ctx.author.id).cls()=='aids2': #
+            m=self.ai(ctx)
+        else:
+            await ctx.send_help()
+            return
+        if dm:
+            return m
+        else:
+            await m
+
         
 
         
@@ -328,7 +357,7 @@ available classes: > aids2,cse3b,cse3c,cse2c,mtech2
             d+=timedelta(days=1)
             j+=1
         if(d!=self.today):
-            emb=discord.Embed(title="Holiday",description=f"*Next class in* {j} days, `{(9+24-d1.hour)%24}` hours")
+            emb=discord.Embed(title="Holiday",description=f"*Next class in* {j+(9+24-d1.hour)//24} days, {(9+24-d1.hour)%24} hours")
             emb.set_footer(text=self.day_order[str(d)])
             embs.append(emb)
             
@@ -648,7 +677,7 @@ available classes: > aids2,cse3b,cse3c,cse2c,mtech2
             "Srollno": rollnum,
             "Password": dob
             }
-            print(rollnum,dob)
+            
             r_headers={
                     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
                     "Accept-Encoding": "gzip, deflate",
@@ -700,7 +729,8 @@ available classes: > aids2,cse3b,cse3c,cse2c,mtech2
                 'Connection': 'keep-alive',
                 'Referer': 'http://results.skcet.ac.in:612/index.php/Welcome/Login',
                 
-                'Cookie': 'ci_session='+r.cookies.get_dict()['ci_session'],
+                #'Cookie': 'ci_session='+r.cookies.get_dict()['ci_session'],
+                'Cookie': 'ci_session=mtq22fefrtr9l6l8djcjircu375h0mro',
                 'Upgrade-Insecure-Requests': '1',
                 }
                 r1=requests.post('http://results.skcet.ac.in:612/index.php/Result',cookies=r.cookies,headers=r_headers1)
