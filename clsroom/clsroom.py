@@ -1,18 +1,19 @@
 import datetime as dt
-from pytz import timezone
 import os
 import os.path
 import re
-import aiohttp
 import time
 from sys import path
 from typing import Literal
-from discord.ext import tasks
+
+import aiohttp
 import discord
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 from dateutil.tz import gettz
+from discord.ext import tasks
+from pytz import timezone
 from redbot.core import commands, config
 from redbot.core.config import Config
 from redbot.core.utils import chat_formatting as cf
@@ -40,7 +41,7 @@ class ClsRoom(commands.Cog):
             identifier=12345,
             force_registration=False,
         )
-        self.config.register_user(dept=None, batch=None,dm=False,ctx=None)
+        self.config.register_user(dept=None, batch=None, dm=False, ctx=None)
 
         self.ref_time = [dt.time(hr, 30) for hr in [9, 10, 13, 14, 15]]
         self.mapper = {
@@ -73,53 +74,50 @@ class ClsRoom(commands.Cog):
         )
         self.spam_link.start()
 
-    
     @tasks.loop(seconds=300)
     async def spam_link(self):
         """dm class link to registered users before 5 mins class starts"""
         now = dt.datetime.now(tz=gettz("Asia/Kolkata"))
-        t=now.replace(minute=30)-now
-        print(now.hour in [9,10,13,14],t.seconds < 300,t.seconds)
-        if now.hour in [9,10,13,14] and t.seconds <= 300 and t.seconds > 0:
-            print('1',end='')
-            v=await self.config.all_users()
+        t = now.replace(minute=30) - now
+        # print(now.hour in [9, 10, 13, 14], t.seconds < 300, t.seconds)
+        if now.hour in [9, 10, 13, 14] and t.seconds <= 300 and t.seconds > 0:
+            # print("1", end="")
+            v = await self.config.all_users()
             for user in v:
                 if v[user]["dm"]:
-                    a=await self.link(user)
+                    a = await self.link(user)
                     if a:
                         await self.bot.get_user(user).send(embed=a)
-                    
 
     @spam_link.before_loop
     async def before_printer(self):
         await self.bot.wait_until_ready()
-                        
-
 
     @commands.command()
-    async def dmlinks(self, ctx, toggle:bool):
+    async def dmlinks(self, ctx, toggle: bool):
         """Set toggle to Send link of the class to join in dm before 5 mins\nuse `[p] dmlinks false` to not spam in your dm"""
         await ctx.tick()
         if toggle:
-            usr_msg=await ctx.author.send(f"{ctx.author.mention} You have registered to dm links before 5 mins of class starts.\n To stop this service, use `$dmlinks false`")
-        
+            usr_msg = await ctx.author.send(
+                f"{ctx.author.mention} You have registered to dm links before 5 mins of class starts.\n To stop this service, use `$dmlinks false`"
+            )
+
         async with self.config.user_from_id(ctx.author.id).all() as user_data:
-                user_data["dm"]=toggle
+            user_data["dm"] = toggle
         return
 
-        usr_msg=await ctx.fetch_message(ctx.message.id)
-        usr_msg.author=ctx.author
-        usr_ctx=await self.bot.get_context(usr_msg)
+        usr_msg = await ctx.fetch_message(ctx.message.id)
+        usr_msg.author = ctx.author
+        usr_ctx = await self.bot.get_context(usr_msg)
         async with self.config.user_from_id(ctx.author.id).all() as user_data:
             if toggle:
-                user_data["dm"]=True
-                user_data["ctx"]=usr_ctx
+                user_data["dm"] = True
+                user_data["ctx"] = usr_ctx
             else:
-                user_data["dm"]=False
-        #ctx
-        
+                user_data["dm"] = False
+        # ctx
 
-        #await ctx.author.send(f"{user.mention} has been sent a DM")
+        # await ctx.author.send(f"{user.mention} has been sent a DM")
 
     @commands.command(aliases=["con"])
     async def connect(self, ctx, dept, batch: int = None):
@@ -157,6 +155,39 @@ class ClsRoom(commands.Cog):
         if not batch:
             batch = 1
         return mini[batch - 1]
+
+    @commands.command()
+    async def leaves(self, ctx, verbose: bool = False):
+        """Get the list of holidays for fun"""
+        holidays = ""
+        time_now = dt.datetime.now(tz=gettz("Asia/Kolkata"))
+        tmrw = time_now + dt.timedelta(days=1)
+        while True:
+            try:
+                if res.day_order[tmrw.strftime("%Y-%m-%d")][-1] == "0":
+                    if verbose or not tmrw.weekday() in (5, 6):
+                        holidays += f"{tmrw.strftime('`%d/%m/%y` : **%A**')}\n"
+                tmrw += dt.timedelta(days=1)
+            except KeyError:
+                break
+
+        embs = []
+        pages = list(cf.pagify(holidays, page_length=1000, shorten_by=0))
+        no_of_pages = len(pages)
+        for pgno, page in enumerate(pages, 1):
+            embs.append(
+                discord.Embed(title="Holiday Calender", description=page).set_footer(
+                    text=f"Page {pgno}/{no_of_pages}"
+                )
+            )
+
+        await menu(
+            ctx,
+            pages=embs,
+            controls=DEFAULT_CONTROLS
+            if len(embs) > 1
+            else {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]},
+        )
 
     @commands.command(aliases=["tt"])
     async def timetable(self, ctx, dept: str = None, batch: int = None):
@@ -212,7 +243,7 @@ class ClsRoom(commands.Cog):
             {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]},
         )
 
-    @commands.command(aliases=["links"],usage="[dept] [batch]")
+    @commands.command(aliases=["links"], usage="[dept] [batch]")
     async def link(self, ctx, dept=None, batch: int = None):
         """Get the link to the gmeet of your department
 
@@ -225,7 +256,7 @@ class ClsRoom(commands.Cog):
         - cse3c
         - mtech2
         """
-        is_dm= type(ctx)is int
+        is_dm = type(ctx) is int
         user_data = await self.config.user_from_id(ctx if is_dm else ctx.author.id).all()
         if not dept:
             if user_data["dept"] and user_data["batch"]:
@@ -268,7 +299,6 @@ class ClsRoom(commands.Cog):
                 description=f"Next class in {cf.humanize_timedelta(timedelta=next_class_day)}",
                 color=discord.Color.orange(),
             )
-            
 
             emb.set_footer(
                 text=f"Next day order {res.day_order[(time_now + next_class_day).strftime('%Y-%m-%d')]}"
@@ -276,8 +306,7 @@ class ClsRoom(commands.Cog):
 
             # emb.add_field(name="Your first class on the next working day", value=sub[0])
             embs.append(emb)
-            
-            
+
         # Working day :(
         else:
             emb = discord.Embed(color=discord.Color.green())
@@ -296,7 +325,7 @@ class ClsRoom(commands.Cog):
                     name="Upcomming class",
                     value=f"**{subject}**\n Start time: `{self.ref_time[0].strftime('%I:%M %p')}`\n [Google-Meet-link]({dept_links[subject]})",
                 )
-                
+
             else:
                 for hr_index in range(len(self.ref_time) - 1):
                     if self.ref_time[hr_index] <= time_obj < self.ref_time[hr_index + 1]:
@@ -345,13 +374,13 @@ class ClsRoom(commands.Cog):
         # For now there is only one page, let's add more later
         if not is_dm:
             await menu(
-            ctx,
-            embs,
-            DEFAULT_CONTROLS
-            if len(embs) > 1
-            else {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]},
-        )
-        else: 
+                ctx,
+                embs,
+                DEFAULT_CONTROLS
+                if len(embs) > 1
+                else {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]},
+            )
+        else:
             return embs[0]
 
     # rollnum cogs added here
@@ -371,7 +400,8 @@ class ClsRoom(commands.Cog):
         if len(d):
             emb = discord.Embed(title="Details")
             emb.add_field(
-                name="Name", value=str(d.iloc[0]["name"]) + " " + str(d.iloc[0]["s_name"])
+                name="Name",
+                value=str(d.iloc[0]["name"]) + " " + str(d.iloc[0]["s_name"]),
             )
             emb.add_field(name="Department", value=d.iloc[0]["dept"])
             emb.add_field(name="Roll No", value=d.iloc[0]["r_no"])
@@ -383,36 +413,50 @@ class ClsRoom(commands.Cog):
         else:
             await ctx.send("Not found")
 
-    
     @commands.command()
-    async def rnum(self,ctx,rollnumber:str):
+    async def rnum(self, ctx, rollnumber: str):
         """Get detailed information about the given rollnumber of a person"""
 
-        head1 = {"user-agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36"}
+        head1 = {
+            "user-agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36"
+        }
         head2 = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Origin': 'https://pgw.srikrishna.ac.in',
-            'Connection': 'keep-alive',
-            'Referer': 'https://pgw.srikrishna.ac.in/index.php/?key=tyut54yh56thtgh',
-            'Upgrade-Insecure-Requests': '1',
+            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Origin": "https://pgw.srikrishna.ac.in",
+            "Connection": "keep-alive",
+            "Referer": "https://pgw.srikrishna.ac.in/index.php/?key=tyut54yh56thtgh",
+            "Upgrade-Insecure-Requests": "1",
         }
         async with ctx.typing():
             async with aiohttp.ClientSession() as session:
-                async with session.get("https://pgw.srikrishna.ac.in/index.php/?key=tyut54yh56thtgh",headers=head1) as resp:
+                async with session.get(
+                    "https://pgw.srikrishna.ac.in/index.php/?key=tyut54yh56thtgh",
+                    headers=head1,
+                ) as resp:
                     if resp.status != 200:
                         return await ctx.send("Server down, try again later")
-                async with session.post("https://pgw.srikrishna.ac.in/index.php/Welcome/Dashboard",headers=head2,data={'RollNo':rollnumber}) as resp:
+                async with session.post(
+                    "https://pgw.srikrishna.ac.in/index.php/Welcome/Dashboard",
+                    headers=head2,
+                    data={"RollNo": rollnumber},
+                ) as resp:
                     if resp.status != 200:
                         return await ctx.send("Server down, try again later")
                     soup = BeautifulSoup(await resp.text(), "html.parser")
-                emb = discord.Embed(title="Something went wrong, User not found",color=await ctx.embed_color())
-                for thing in soup.findAll(id=lambda L: L and L.startswith('student_')):
-                    emb.add_field(name=thing["id"].replace("student_","").capitalize(),value=thing.text.title())
+                emb = discord.Embed(
+                    title="Something went wrong, User not found",
+                    color=await ctx.embed_color(),
+                )
+                for thing in soup.findAll(id=lambda L: L and L.startswith("student_")):
+                    emb.add_field(
+                        name=thing["id"].replace("student_", "").capitalize(),
+                        value=thing.text.title(),
+                    )
                     if thing["id"] == "student_name":
-                        emb.title = thing.text.split()[0].capitalize()+"'s Details"
+                        emb.title = thing.text.split()[0].capitalize() + "'s Details"
                 emb.set_thumbnail(url=f"https://samwyc.codes/images/{rollnumber}.jpg")
                 await ctx.send(embed=emb)
 
@@ -467,13 +511,12 @@ class ClsRoom(commands.Cog):
         # await ctx.send(self.data)
         d = self.ai_data.loc[self.ai_data["S_No"] == options]
         if len(d):
-            emb = discord.Embed(title="Details",color=discord.Color.dark_green())
+            emb = discord.Embed(title="Details", color=discord.Color.dark_green())
             emb.add_field(name="Name", value=d.iloc[0]["Name"])
             emb.add_field(name="DOB", value=d.iloc[0]["DOB"])
             emb.add_field(name="Mobile", value=d.iloc[0]["Student_cell"])
             emb.add_field(name="Email", value=d.iloc[0]["Email_id"])
             emb.add_field(name="Address", value=d.iloc[0]["Per_Address"])
-            
 
             # emb.set_image(url=f"https://samwyc.codes/images/20euai{options:03}.jpg")
             await menu(ctx, [emb], {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]})
@@ -503,7 +546,7 @@ class ClsRoom(commands.Cog):
 
         if len(d) == 0:
             return await ctx.reply("Wrong serial number")
-            
+
         dd = str(d.iloc[0]["DOB"]).split("-")
         dd[0], dd[1] = month[dd[1]], dd[0]
         dd = "/".join(dd)
@@ -622,4 +665,3 @@ class ClsRoom(commands.Cog):
                 )
             except:
                 await ctx.send(f"Somthing went wrong at the last moment")
-
