@@ -15,7 +15,7 @@ def create_dates(sdate, edate):
 
 
 # mtech
-mtech = {
+mtech2 = {
     "Day-1": ["DS", "CA", "OS-LAB", "OS-LAB"],
     "Day-2": ["OOP", "DAA", "DS", "OS"],
     "Day-3": ["OS", "CA", "DAA", "AC"],
@@ -23,7 +23,7 @@ mtech = {
     "Day-5": ["CA", "DS", "OOP-LAB", "OOP-LAB"],
     "Day-6": ["OOP", "DS", "OS", "AC"],
 }
-mtech_links = {
+mtech2_links = {
     "OS-LAB": "https://meet.google.com/lookup/gysmi2d4b2",
     "OS": "https://meet.google.com/lookup/f67mr7goeg",
     "OOP": " https://meet.google.com/lookup/bpecf37dx4",
@@ -40,7 +40,7 @@ cse3b_b1 = {
     "Day-1": ["MES", "PL", "TOC", "OOAD"],
     "Day-2": ["DCN", "BlockChain", "AI", "MES-LAB"],
     "Day-3": ["OOAD", "TOC", "MES", "AI"],
-    "Day-4": ["DON", "Mini Project", "BlockChain", "PL"],
+    "Day-4": ["DCN", "Mini Project", "BlockChain", "PL"],
     "Day-5": ["TOC", "BlockChain", "DCN", "CN-LAB"],
     "Day-6": ["MES", "OOAD", "AI", "AI-LAB"],
 }
@@ -65,7 +65,7 @@ cse3b_links = {
     "CN-LAB": "https://meet.google.com/lookup/cvkrksow2c?authuser=0&hs=179",
     "PL": "https://youtube.com/watch?v=dQw4w9WgXcQ",
 }
-linkscse3c = {
+'''linkscse3c = {
     "TOC": "https://meet.google.com/lookup/cssg54qozm?authuser=1&hs=179",
     "DCN": "https://meet.google.com/lookup/gl7ckyp4je?authuser=1&hs=179",
     "DCN-LAB": "https://meet.google.com/lookup/a5ek2k3ykp?authuser=1&hs=179",
@@ -77,11 +77,11 @@ linkscse3c = {
     "PE2": "https://meet.google.com/lookup/cy5q5hmd6e?authuser=1&hs=179",
     "Mini Project": "https://meet.google.com/lookup/eljjxxguwn?authuser=1&hs=179",
 }
-
+'''
 # CSE 3c
 cse3c_b1 = {
     "Day-1": ["PE1", "PL", "AI", "MES"],
-    "Day-2": ["TOC", "PE2", "MES", "CN-LAB"],
+    "Day-2": ["TOC", "PE2", "MES", "DCN-LAB"],
     "Day-3": ["AI", "TOC", "DCN", "PE1"],
     "Day-4": ["MES", "MES-LAB", "PE2", "PL"],
     "Day-5": ["PE1", "PE2", "DCN", "AI-LAB"],
@@ -91,7 +91,7 @@ cse3c_b2 = {
     "Day-1": ["AI", "PL", "PE1", "TOC"],
     "Day-2": ["PE2", "TOC", "DCN", "AI-LAB"],
     "Day-3": ["TOC", "PE2", "PE1", "MES"],
-    "Day-4": ["AI", "CN-LAB", "DCN", "PL"],
+    "Day-4": ["AI", "DCN-LAB", "DCN", "PL"],
     "Day-5": ["DCN", "AI", "MES", "MES-LAB"],
     "Day-6": ["PE2", "PE1", "MES", "Mini Project"],
 }
@@ -99,7 +99,7 @@ cse3c_b2 = {
 cse3c_links = {
     "TOC": "https://meet.google.com/lookup/cssg54qozm?authuser=1&hs=179",
     "DCN": "https://meet.google.com/lookup/gl7ckyp4je?authuser=1&hs=179",
-    "CN-LAB": "https://meet.google.com/lookup/a5ek2k3ykp?authuser=1&hs=179",
+    "DCN-LAB": "https://meet.google.com/lookup/a5ek2k3ykp?authuser=1&hs=179",
     "AI": "https://meet.google.com/lookup/abmcib32u2?authuser=1&hs=179",
     "AI-LAB": "https://meet.google.com/lookup/abmcib32u2?authuser=1&hs=179",
     "PE1": "https://meet.google.com/lookup/gnmgayz63c?authuser=1&hs=179",
@@ -163,7 +163,7 @@ aids_b2 = {
     "Day-6": ["OOP", "DBMS", "FOS", "DBMS-LAB", "NILL"],
 }
 
-aids_links = {
+aids2_links = {
     "MS": "https://meet.google.com/lookup/bwteimvi63",
     "MS-LAB": "https://meet.google.com/lookup/bwteimvi63",
     "OOP": "https://meet.google.com/lookup/cd272ht2kh",

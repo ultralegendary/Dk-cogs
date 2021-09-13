@@ -1,11 +1,13 @@
 import datetime as dt
+from pytz import timezone
 import os
 import os.path
 import re
+import aiohttp
 import time
 from sys import path
 from typing import Literal
-
+from discord.ext import tasks
 import discord
 import pandas as pd
 import requests
@@ -38,23 +40,23 @@ class ClsRoom(commands.Cog):
             identifier=12345,
             force_registration=False,
         )
-        self.config.register_user(dept=None, batch=None)
+        self.config.register_user(dept=None, batch=None,dm=False,ctx=None)
 
         self.ref_time = [dt.time(hr, 30) for hr in [9, 10, 13, 14, 15]]
         self.mapper = {
             "cse3b": [res.cse3b_b1, res.cse3b_b2],
             "cse3c": [res.cse3c_b1, res.cse3c_b2],
             "cse2c": [res.cse2c_b1, res.cse2c_b2],
-            "mtech": [res.mtech],
-            "aids": [res.aids_b1, res.aids_b2],
+            "mtech2": [res.mtech2],
+            "aids2": [res.aids_b1, res.aids_b2],
         }
 
         self.title_map = {
             "cse3b": "CSE III-B",
             "cse3c": "CSE III-C",
             "cse2c": "CSE II-C",
-            "mtech": "M.Tech",
-            "aids": "AI/DS",
+            "mtech2": "M.Tech CSE II",
+            "aids2": "AIDS II",
         }
 
         # rollnum things
@@ -69,37 +71,66 @@ class ClsRoom(commands.Cog):
             identifier=12345,
             force_registration=True,
         )
+        self.spam_link.start()
 
-    """
-        self.SCOPES = ['https://www.googleapis.com/auth/classroom.courses.readonly']
-        self.creds=None
-        if os.path.exists('token.json'):
-            self.creds = Credentials.from_authorized_user_file('token.json', self.SCOPES)
-        # If there are no (valid) credentials available, let the user log in.
-        if not self.creds or not self.creds.valid:
-            if self.creds and self.creds.expired and self.creds.refresh_token:
-                self.creds.refresh(Request())
+    
+    @tasks.loop(seconds=300)
+    async def spam_link(self):
+        """dm class link to registered users before 5 mins class starts"""
+        now = dt.datetime.now(tz=gettz("Asia/Kolkata"))
+        t=now.replace(minute=30)-now
+        print(now.hour in [9,10,13,14],t.seconds < 300,t.seconds)
+        if now.hour in [9,10,13,14] and t.seconds <= 300 and t.seconds > 0:
+            print('1',end='')
+            v=await self.config.all_users()
+            for user in v:
+                if v[user]["dm"]:
+                    a=await self.link(user)
+                    if a:
+                        await self.bot.get_user(user).send(embed=a)
+                    
+
+    @spam_link.before_loop
+    async def before_printer(self):
+        await self.bot.wait_until_ready()
+                        
+
+
+    @commands.command()
+    async def dmlinks(self, ctx, toggle:bool):
+        """Set toggle to Send link of the class to join in dm before 5 mins\nuse `[p] dmlinks false` to not spam in your dm"""
+        await ctx.tick()
+        if toggle:
+            usr_msg=await ctx.author.send(f"{ctx.author.mention} You have registered to dm links before 5 mins of class starts.\n To stop this service, use `$dmlinks false`")
+        
+        async with self.config.user_from_id(ctx.author.id).all() as user_data:
+                user_data["dm"]=toggle
+        return
+
+        usr_msg=await ctx.fetch_message(ctx.message.id)
+        usr_msg.author=ctx.author
+        usr_ctx=await self.bot.get_context(usr_msg)
+        async with self.config.user_from_id(ctx.author.id).all() as user_data:
+            if toggle:
+                user_data["dm"]=True
+                user_data["ctx"]=usr_ctx
             else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    'credentials.json', self.SCOPES)
-                self.creds = flow.run_local_server(port=0)
-            # Save the credentials for the next run
-            with open('token.json', 'w') as token:
-                token.write(self.creds.to_json())
+                user_data["dm"]=False
+        #ctx
+        
 
-        self.service = build('classroom', 'v1', credentials=self.creds)
-    """
+        #await ctx.author.send(f"{user.mention} has been sent a DM")
 
     @commands.command(aliases=["con"])
     async def connect(self, ctx, dept, batch: int = None):
         """Connect to your class and batch to get the link instantneously while using [p]link or [p]timetable
 
         Available departments:
-        - aids
+        - aids2
         - cse2c
         - cse3b
         - cse3c
-        - mtech
+        - mtech2
         """
         if dept not in self.mapper.keys():
             return await ctx.send(
@@ -132,11 +163,11 @@ class ClsRoom(commands.Cog):
         """`[p]timetable department` displays the timetable of the department
 
         Available departments:
-        - aids
+        - aids2
         - cse2c
         - cse3b
         - cse3c
-        - mtech
+        - mtech2
         """
 
         user_data = await self.config.user_from_id(ctx.author.id).all()
@@ -159,7 +190,7 @@ class ClsRoom(commands.Cog):
                 batch = 1
             elif not batch or batch not in (1, 2):
                 return await ctx.send(
-                    f"Kindly enter whether batch 1 or 2\n Example: {ctx.message.content.split(' ')[0]} aids 1"
+                    f"Kindly enter whether batch 1 or 2\n Example: {ctx.message.content.split(' ')[0]} aids2 1"
                 )
 
         if dept not in self.mapper:
@@ -181,20 +212,21 @@ class ClsRoom(commands.Cog):
             {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]},
         )
 
-    @commands.command(aliases=["links"])
+    @commands.command(aliases=["links"],usage="[dept] [batch]")
     async def link(self, ctx, dept=None, batch: int = None):
         """Get the link to the gmeet of your department
 
         Connect your class using `[p]connect` or else give your department and batch number
 
         Available departments:
-        - aids
+        - aids2
         - cse2c
         - cse3b
         - cse3c
-        - mtech
+        - mtech2
         """
-        user_data = await self.config.user_from_id(ctx.author.id).all()
+        is_dm= type(ctx)is int
+        user_data = await self.config.user_from_id(ctx if is_dm else ctx.author.id).all()
         if not dept:
             if user_data["dept"] and user_data["batch"]:
                 dept = user_data["dept"]
@@ -229,11 +261,14 @@ class ClsRoom(commands.Cog):
 
         # Holiday
         if day_order[-1] == "0":
+            if is_dm:
+                return None
             emb = discord.Embed(
                 title="Holiday",
                 description=f"Next class in {cf.humanize_timedelta(timedelta=next_class_day)}",
-                color=await ctx.embed_color(),
+                color=discord.Color.orange(),
             )
+            
 
             emb.set_footer(
                 text=f"Next day order {res.day_order[(time_now + next_class_day).strftime('%Y-%m-%d')]}"
@@ -241,9 +276,11 @@ class ClsRoom(commands.Cog):
 
             # emb.add_field(name="Your first class on the next working day", value=sub[0])
             embs.append(emb)
+            
+            
         # Working day :(
         else:
-            emb = discord.Embed(color=await ctx.embed_color())
+            emb = discord.Embed(color=discord.Color.green())
             emb.set_footer(text=f"{day_order}  |  Batch-{batch}")
             emb.set_author(name=self.title_map[dept])
             dept_links = getattr(res, dept + "_links")
@@ -259,6 +296,7 @@ class ClsRoom(commands.Cog):
                     name="Upcomming class",
                     value=f"**{subject}**\n Start time: `{self.ref_time[0].strftime('%I:%M %p')}`\n [Google-Meet-link]({dept_links[subject]})",
                 )
+                
             else:
                 for hr_index in range(len(self.ref_time) - 1):
                     if self.ref_time[hr_index] <= time_obj < self.ref_time[hr_index + 1]:
@@ -285,6 +323,8 @@ class ClsRoom(commands.Cog):
                                     name="Upcoming class",
                                     value=f"**{subject}**\n Start time: `{self.ref_time[hr_index+1].strftime('%I:%M %p')}`\n [Google-Meet-link]({dept_links[subject]})",
                                 )
+                            elif is_dm and subject == "NILL":
+                                return None
                         break
                 else:
                     subject = sub_obj[-1]
@@ -303,13 +343,16 @@ class ClsRoom(commands.Cog):
             embs.append(emb)
 
         # For now there is only one page, let's add more later
-        await menu(
+        if not is_dm:
+            await menu(
             ctx,
             embs,
             DEFAULT_CONTROLS
             if len(embs) > 1
             else {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]},
         )
+        else: 
+            return embs[0]
 
     # rollnum cogs added here
     @commands.command()
@@ -319,7 +362,7 @@ class ClsRoom(commands.Cog):
         await menu(ctx, [emb], {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]})
 
     @commands.command()
-    async def rnum(self, ctx, option):
+    async def rn(self, ctx, option):
         """displays the details of roll number provided"""
         o = option.upper()
         # data.loc[data["r_no"]=='17EUCS001']
@@ -339,6 +382,39 @@ class ClsRoom(commands.Cog):
             await ctx.send(res)"""
         else:
             await ctx.send("Not found")
+
+    
+    @commands.command()
+    async def rnum(self,ctx,rollnumber:str):
+        """Get detailed information about the given rollnumber of a person"""
+
+        head1 = {"user-agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36"}
+        head2 = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Origin': 'https://pgw.srikrishna.ac.in',
+            'Connection': 'keep-alive',
+            'Referer': 'https://pgw.srikrishna.ac.in/index.php/?key=tyut54yh56thtgh',
+            'Upgrade-Insecure-Requests': '1',
+        }
+        async with ctx.typing():
+            async with aiohttp.ClientSession() as session:
+                async with session.get("https://pgw.srikrishna.ac.in/index.php/?key=tyut54yh56thtgh",headers=head1) as resp:
+                    if resp.status != 200:
+                        return await ctx.send("Server down, try again later")
+                async with session.post("https://pgw.srikrishna.ac.in/index.php/Welcome/Dashboard",headers=head2,data={'RollNo':rollnumber}) as resp:
+                    if resp.status != 200:
+                        return await ctx.send("Server down, try again later")
+                    soup = BeautifulSoup(await resp.text(), "html.parser")
+                emb = discord.Embed(title="Something went wrong, User not found",color=await ctx.embed_color())
+                for thing in soup.findAll(id=lambda L: L and L.startswith('student_')):
+                    emb.add_field(name=thing["id"].replace("student_","").capitalize(),value=thing.text.title())
+                    if thing["id"] == "student_name":
+                        emb.title = thing.text.split()[0].capitalize()+"'s Details"
+                emb.set_thumbnail(url=f"https://samwyc.codes/images/{rollnumber}.jpg")
+                await ctx.send(embed=emb)
 
     @commands.command()
     async def sname(self, ctx, option):
@@ -390,18 +466,19 @@ class ClsRoom(commands.Cog):
         # data.loc[data["r_no"]=='17EUCS001']
         # await ctx.send(self.data)
         d = self.ai_data.loc[self.ai_data["S_No"] == options]
-        try:
-            emb = discord.Embed(title="Details")
+        if len(d):
+            emb = discord.Embed(title="Details",color=discord.Color.dark_green())
             emb.add_field(name="Name", value=d.iloc[0]["Name"])
             emb.add_field(name="DOB", value=d.iloc[0]["DOB"])
             emb.add_field(name="Mobile", value=d.iloc[0]["Student_cell"])
             emb.add_field(name="Email", value=d.iloc[0]["Email_id"])
             emb.add_field(name="Address", value=d.iloc[0]["Per_Address"])
+            
 
             # emb.set_image(url=f"https://samwyc.codes/images/20euai{options:03}.jpg")
             await menu(ctx, [emb], {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]})
 
-        except:
+        else:
             await ctx.send("Not found")
 
     @commands.command()
@@ -425,8 +502,8 @@ class ClsRoom(commands.Cog):
         d = self.ai_data.loc[self.ai_data["S_No"] == serialnum]
 
         if len(d) == 0:
-            await ctx.reply("Wrong serial number")
-            return
+            return await ctx.reply("Wrong serial number")
+            
         dd = str(d.iloc[0]["DOB"]).split("-")
         dd[0], dd[1] = month[dd[1]], dd[0]
         dd = "/".join(dd)
@@ -546,37 +623,3 @@ class ClsRoom(commands.Cog):
             except:
                 await ctx.send(f"Somthing went wrong at the last moment")
 
-    '''
-    @commands.command()
-    async def classes(self,ctx,options:int):
-        """list down the classes available in classroom
-        `[p]classes 10` prints the latest 10 classes created"""
-        
-        
-        if os.path.exists('token.json'):
-            self.creds = Credentials.from_authorized_user_file('token.json', self.SCOPES)
-        if not self.creds or not self.creds.valid:
-            if self.creds and self.creds.expired and self.creds.refresh_token:
-                self.creds.refresh(Request())
-        else:
-            pass
-            
-        # Save the credentials for the next run
-        with open('token.json', 'w') as token:
-            token.write(self.creds.to_json())
-
-        self.service = build('classroom', 'v1', credentials=self.creds)
-
-
-        # Call the Classroom API
-        results = self.service.courses().list(pageSize=options).execute()
-        courses = results.get('courses', [])
-
-        if not courses:
-            await ctx.send('No courses found.')
-        else:
-            r="Courses: \n"
-            await ctx.send(r+"\n".join([course['alternateLink']for course in courses]))
-
-    
-'''
