@@ -65,7 +65,7 @@ cse3b_links = {
     "CN-LAB": "https://meet.google.com/lookup/cvkrksow2c?authuser=0&hs=179",
     "PL": "https://youtube.com/watch?v=dQw4w9WgXcQ",
 }
-'''linkscse3c = {
+"""linkscse3c = {
     "TOC": "https://meet.google.com/lookup/cssg54qozm?authuser=1&hs=179",
     "DCN": "https://meet.google.com/lookup/gl7ckyp4je?authuser=1&hs=179",
     "DCN-LAB": "https://meet.google.com/lookup/a5ek2k3ykp?authuser=1&hs=179",
@@ -77,7 +77,7 @@ cse3b_links = {
     "PE2": "https://meet.google.com/lookup/cy5q5hmd6e?authuser=1&hs=179",
     "Mini Project": "https://meet.google.com/lookup/eljjxxguwn?authuser=1&hs=179",
 }
-'''
+"""
 # CSE 3c
 cse3c_b1 = {
     "Day-1": ["PE1", "PL", "AI", "MES"],
