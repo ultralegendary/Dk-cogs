@@ -79,9 +79,9 @@ class ClsRoom(commands.Cog):
         """dm class link to registered users before 5 mins class starts"""
         now = dt.datetime.now(tz=gettz("Asia/Kolkata"))
         t = now.replace(minute=30) - now
-        # print(now.hour in [9, 10, 13, 14], t.seconds < 300, t.seconds)
+        
         if now.hour in [9, 10, 13, 14] and t.seconds <= 300 and t.seconds > 0:
-            # print("1", end="")
+            
             v = await self.config.all_users()
             for user in v:
                 if v[user]["dm"]:

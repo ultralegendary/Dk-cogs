@@ -139,28 +139,41 @@ class Updts(commands.Cog):
 
     @commands.is_owner()
     @commands.command()
-    async def updatemat(self, ctx):
+    async def updatemat(self, ctx,i:int):
         """Update course materials and assingments"""
+        
+        if ctx:
+            async with ctx.typing():
+                cm = []
+                cw = []
+                courses = await self.config.custom("CustomGuildGroup", ctx.guild.id).courses()
+                for c in courses:
+                    cw.append(self.service.courses().courseWork().list(courseId=c["id"]).execute())
+                    cm.append(
+                        self.service.courses().courseWorkMaterials().list(courseId=c["id"]).execute()
+                    )
 
-        async with ctx.typing():
-            cm = []
-            cw = []
-            courses = await self.config.custom("CustomGuildGroup", ctx.guild.id).courses()
-            for c in courses:
-                cw.append(self.service.courses().courseWork().list(courseId=c["id"]).execute())
-                cm.append(
-                    self.service.courses().courseWorkMaterials().list(courseId=c["id"]).execute()
-                )
+                await self.config.custom("CustomGuildGroup", ctx.guild.id).coursematerials.set(cm)
+                await self.config.custom("CustomGuildGroup", ctx.guild.id).coursework.set(cw)
 
-            await self.config.custom("CustomGuildGroup", ctx.guild.id).coursematerials.set(cm)
-            await self.config.custom("CustomGuildGroup", ctx.guild.id).coursework.set(cw)
+            await ctx.tick()
+        else:
+            cm = await self.config.custom("CustomGuildGroup", 781133714306105394).coursematerials()
+            cw = await self.config.custom("CustomGuildGroup", 781133714306105394).coursework()
+            courses = await self.config.custom("CustomGuildGroup", 781133714306105394).courses()
+            cw[i]=self.service.courses().courseWork().list(courseId=courses[i]["id"]).execute()
+            cm[i]=self.service.courses().courseWorkMaterials().list(courseId=courses[i]["id"]).execute()
 
-        await ctx.tick()
+            await self.config.custom("CustomGuildGroup", 781133714306105394).coursematerials.set(cm)
+            await self.config.custom("CustomGuildGroup", 781133714306105394).coursework.set(cw)
+
+
 
     @tasks.loop(seconds=600)
     async def update_courses(self):
         """updates and posts unposted materials into mentioned channel"""
         print("YES")
+        changes=0
         channel = await self.config.guild_from_id(781133714306105394).channel_id()
         v = await self.config.custom("CustomGuildGroup", 781133714306105394).coursematerials()
         c = await self.config.custom("CustomGuildGroup", 781133714306105394).courses()
@@ -169,130 +182,153 @@ class Updts(commands.Cog):
 
         for v1, c1, w1, t1, i in zip(v[:11], c[:11], w[:11], t[:11], range(11)):
             p = 0
+            
+            new = self.service.courses(
+                ).courseWorkMaterials(
+                ).list(courseId=c1["id"], pageSize=5
+                ).execute()
+            
+            #await ctx.send(f"```{t1}``` {c1['id']}")
+            if "courseWorkMaterial" in v1.keys():
+                
+                limit=(v1["courseWorkMaterial"][0]if "courseWorkMaterial"in v1.keys()else {"courseWorkMaterial":{'id':0}})
+                print(p,end=f"{i}")
+                ids=[i['id']for i in v1['courseWorkMaterial']]
+                if "courseWorkMaterial" in new.keys():
 
-            new = (
-                self.service.courses()
-                .courseWorkMaterials()
-                .list(courseId=c1["id"], pageSize=5)
-                .execute()
-            )
-            # await ctx.send(f"```{t1}``` {c1['id']}")
-            if "courseWorkMaterial" in new.keys():
+                    while p<len(new['courseWorkMaterial'])and limit['id']!=new['courseWorkMaterial'][p]['id']:
+                        vv1 = new["courseWorkMaterial"][p]
+                        p += 1
 
-                for i in new["courseWorkMaterial"]:
-                    vv1 = v1["courseWorkMaterial"][p]
-                    p += 1
-
-                    if i["id"] != vv1["id"]:
-                        emb = discord.Embed(
-                            title=f"{t1['profile']['name']['fullName']} : Posted New material"
-                        )
-                    elif i["id"] == vv1["id"] and i["updateTime"] != vv1["updateTime"]:
-                        emb = discord.Embed(
-                            title=f"{t1['profile']['name']['fullName']} : Updated a material"
-                        )
-                    else:
-                        break
-                    # emp.add_field(name="Course",value=f"{c1['name']}  {c1['section']}")
-                    emb.add_field(name="Course", value=f"{c1['name']}  {c1['section']}")
-                    emb.add_field(
-                        name="Link to the original post",
-                        value=f"[Original post link]({vv1['alternateLink']})",
-                    )
-                    emb.add_field(
-                        name="Description",
-                        value=(
-                            vv1["description"] if "description" in vv1.keys() else "No description"
-                        ),
-                    )
-                    if "title" in vv1.keys():
-                        emb.add_field(name="Title", value=f"{i['title']}")
-                    d1 = (
-                        datetime.strptime(
-                            vv1["creationTime"].split(".")[0],
-                            "%Y-%m-%dT%H:%M:%S",
-                        )
-                        + timedelta(hours=5, minutes=30)
-                    )
-                    d1 = d1.strftime("%d-%m-%Y  %a %H:%M")
-
-                    d2 = (
-                        datetime.strptime(
-                            vv1["updateTime"].split(".")[0],
-                            "%Y-%m-%dT%H:%M:%S",
-                        )
-                        + timedelta(hours=5, minutes=30)
-                    )
-                    d2 = d2.strftime("%d-%m-%Y  %a %H:%M")
-
-                    color = discord.Color.random()
-                    # await ctx.send(str(vv1.keys())[:1000])
-                    if "materials" in vv1.keys():
-
-                        for j in vv1["materials"]:
-                            emb1 = emb
-                            # emp.add_field(name="Course",value=f"{c1['name']}  {c1['section']}")
-
-                            l = list(j.keys())
-                            # await ctx.send(f"{j}")
-                            if l[0] == "link":
-                                emb1.add_field(
-                                    name="LINK",
-                                    value=f"[{j['link']['title']}]({j['link']['url']})",
-                                )
-
-                            elif l[0] == "driveFile":
-                                emb1.add_field(
-                                    name="DRIVEFILE",
-                                    value=f"[{j['driveFile']['driveFile']['title']}]({j['driveFile']['driveFile']['alternateLink']})",
-                                )
-
-                            elif l[0] == "youtubeVideo":
-                                emb1.add_field(
-                                    name=f"YOUTUBEVEDIO",
-                                    value=f"[{j['youtubeVideo']['title']}]({j['youtubeVideo']['alternateLink']})",
-                                )
-
-                            elif l[0] == "form":
-                                emb1.add_field(
-                                    name="FORM",
-                                    value=f"[j['form']['title']]({j['form']['formUrl']})",
-                                )
-
-                        if "updateTime" in l:
-                            emb1.add_field(name="Last updated", value=f"{j['updateTime']}")
-                        emb1.set_footer(text=f"{c1['section']}")
-
-                        emb1.add_field(name="Creation time: ", value=d1)
-                        emb1.add_field(name="Last updated: ", value=d2)
-                        # await self.bot.get_channel(channel).send(embed=emb1)
-
-                    else:
-                        # emb=discord.Embed(title=f"{t1['profile']['name']['fullName']} Posted New material")
+                        if vv1['id']not in ids:
+                            emb = discord.Embed(
+                                title=f"{t1['profile']['name']['fullName']} : Posted New material"
+                            )
+                        elif vv1['id'] in ids:
+                            emb = discord.Embed(
+                                title=f"{t1['profile']['name']['fullName']} : Updated a material"
+                            )
+                        else:
+                            break
                         # emp.add_field(name="Course",value=f"{c1['name']}  {c1['section']}")
-                        emb1 = emb
+                        emb.add_field(name="Course", value=f"{c1['name']}  {c1['section']}")
+                        emb.add_field(
+                            name="Link to the original post",
+                            value=f"[Original post link]({vv1['alternateLink']})",
+                        )
+                        emb.add_field(
+                            name="Description",
+                            value=(
+                                vv1["description"] if "description" in vv1.keys() else "No description"
+                            ),
+                        )
+                        if "title" in vv1.keys():
+                            emb.add_field(name="Title", value=f"{vv1['title']}")
+                        #await self.bot.get_user(497379893592719360).send(vv1["creationTime"])
+                        d1 = (
+                            datetime.strptime(
+                                vv1["creationTime"].split(".")[0] if len(vv1['creationTime'].split("."))>1 else vv1['creationTime'][:-1],
+                                "%Y-%m-%dT%H:%M:%S",
+                            )
+                            + timedelta(hours=5, minutes=30)
+                        )
+                        d1 = d1.strftime("%d-%m-%Y  %a %H:%M")
 
-                        emb1.add_field(name="Creation time: ", value=d1)
-                        emb1.add_field(name="Last updated: ", value=d2)
-                        # await ctx.send(channel)
-                        # await self.bot.get_channel(channel).send(embed=emb1)
+                        d2 = (
+                            datetime.strptime(
+                                vv1["updateTime"].split(".")[0],
+                                "%Y-%m-%dT%H:%M:%S",
+                            )
+                            + timedelta(hours=5, minutes=30)
+                        )
+                        d2 = d2.strftime("%d-%m-%Y  %a %H:%M")
+
+                        color = discord.Color.random()
+                        # await ctx.send(str(vv1.keys())[:1000])
+                        if "materials" in vv1.keys():
+
+                            for j in vv1["materials"]:
+                                emb1 = emb
+                                # emp.add_field(name="Course",value=f"{c1['name']}  {c1['section']}")
+
+                                l = list(j.keys())
+                                # await ctx.send(f"{j}")
+                                if l[0] == "link":
+                                    emb1.add_field(
+                                        name="LINK",
+                                        value=f"[{j['link']['title']}]({j['link']['url']})",
+                                    )
+
+                                elif l[0] == "driveFile":
+                                    emb1.add_field(
+                                        name="DRIVEFILE",
+                                        value=f"[{j['driveFile']['driveFile']['title']}]({j['driveFile']['driveFile']['alternateLink']})",
+                                    )
+                            
+                            
+                                elif l[0] == "youtubeVideo":
+                                    try:
+                                        emb1.add_field(
+                                            name=f"YOUTUBEVEDIO",
+                                            value=f"[{j['youtubeVideo']['title']}]({j['youtubeVideo']['alternateLink']})",
+                                        )
+                                    except:
+                                        await self.bot.get_user(497379893592719360).send(f"{j}")
+
+                                elif l[0] == "form":
+                                    emb1.add_field(
+                                        name="FORM",
+                                        value=f"[j['form']['title']]({j['form']['formUrl']})",
+                                    )
+                                else:
+                                    await self.bot.get_user(497379893592719360).send(str(l[0]))
+
+                            if "updateTime" in l:
+                                emb1.add_field(name="Last updated", value=f"{j['updateTime']}")
+                            emb1.set_footer(text=f"{c1['section']}")
+
+                            emb1.add_field(name="Creation time: ", value=d1)
+                            emb1.add_field(name="Last updated: ", value=d2)
+                            await self.bot.get_channel(channel).send(embed=emb1)
+                            await self.updatemat(None,i)
+                            changes +=1
+
+                        else:
+                            # emb=discord.Embed(title=f"{t1['profile']['name']['fullName']} Posted New material")
+                            # emp.add_field(name="Course",value=f"{c1['name']}  {c1['section']}")
+                            emb1 = emb
+
+                            emb1.add_field(name="Creation time: ", value=d1)
+                            emb1.add_field(name="Last updated: ", value=d2)
+                            emb1.set_footer(text=f"{c1['section']}")
+                            # await ctx.send(channel)
+                            await self.bot.get_channel(channel).send(embed=emb1)
+                            await self.updatemat(None,i)
+                            changes +=1
 
             q = 0
             new = self.service.courses().courseWork().list(courseId=c1["id"], pageSize=5).execute()
+            if "courseWork" not in new.keys():
+                continue
+                
+            limit=(w1["courseWork"][0]if "courseWork"in w1.keys()else {"courseWork":{'id':0}})
+            
+            ids=[i['id']for i in w1['courseWork']]
             # await ctx.send(f"```{t1}``` {c1['id']}")
 
             if "courseWork" in new.keys():
-
-                for i in new["courseWork"]:
-                    vv1 = w1["courseWork"][q]
+                
+                while q<len(new['courseWork'])and limit['id']!=new['courseWork'][q]['id']:
+                    
+                    vv1 = new["courseWork"][q]
                     q += 1
 
-                    if i["id"] != vv1["id"]:
+                    if vv1["id"] not in ids:
                         emb = discord.Embed(
                             title=f"{t1['profile']['name']['fullName']} : Posted new Assignment",
                             color=discord.Color.random(),
                         )
-                    elif i["id"] == vv1["id"] and i["updateTime"] != vv1["updateTime"]:
+                    elif vv1["id"]in ids:
                         emb = discord.Embed(
                             title=f"{t1['profile']['name']['fullName']} : Updated a Assignment",
                             color=discord.Color.random(),
@@ -326,7 +362,7 @@ class Updts(commands.Cog):
                     else:
                         d1 = "No due date"
                     d2 = datetime.strptime(
-                        vv1["updateTime"].split(".")[0], "%Y-%m-%dT%H:%M:%S"
+                        vv1["updateTime"].split(".")[0]if len(vv1["updateTime"].split("."))>1 else vv1["updateTime"][:-1], "%Y-%m-%dT%H:%M:%S"
                     ) + timedelta(hours=5, minutes=30)
                     d2 = d2.strftime("%d-%m-%Y  %a %H:%M")
 
@@ -363,6 +399,8 @@ class Updts(commands.Cog):
                                     name="FORM",
                                     value=f"[j['form']['title']]({j['form']['formUrl']})",
                                 )
+                            else:
+                                await self.bot.get_user(497379893592719360).send(str(l[0]))
 
                         if "updateTime" in l:
                             emb1.add_field(
@@ -374,23 +412,31 @@ class Updts(commands.Cog):
                         emb1.add_field(name="DUE: ", value=d1)
                         emb1.add_field(name="Last updated: ", value=d2)
                         await self.bot.get_channel(channel).send(embed=emb1)
+                        await self.updatemat(None,i)
+                        changes +=1
 
                     else:
                         # emb=discord.Embed(title=f"{t1['profile']['name']['fullName']} Posted New material")
                         # emp.add_field(name="Course",value=f"{c1['name']}  {c1['section']}")
                         emb1 = emb
+                        emb1.set_footer(text=f"{c1['section']}")
 
-                        emb1.add_field(name="Creation time: ", value=d1)
+                        emb1.add_field(name="DUE: ", value=d1)
                         emb1.add_field(name="Last updated: ", value=d2)
                         # await ctx.send(channel)
                         await self.bot.get_channel(channel).send(embed=emb1)
-
-        # await ctx.tick()
+                        await self.updatemat(None,i)
+                        changes +=1
+        
 
     @update_courses.before_loop
     async def before_update_courses(self):
         await self.bot.wait_until_ready()
 
+    @update_courses.after_loop
+    async def after_update_courses(self):
+        print("Off")
+        self.update_courses.cancel()
     @commands.command()
     @commands.has_permissions(manage_guild=True)
     async def chmat(self, ctx, toogle: bool):

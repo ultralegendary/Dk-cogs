@@ -151,7 +151,7 @@ aids_b1 = {
     "Day-2": ["DBMS", "MS", "AI", "DBMS-LAB", "NILL"],
     "Day-3": ["OOP", "FOS", "DBMS", "MS-LAB", "MS-LAB"],
     "Day-4": ["FOS-LAB", "FOS-LAB", "OOP", "DAA", "NILL"],
-    "Day-5": ["AI", "DBMS", "MS", "FOC", "MC"],
+    "Day-5": ["AI", "DBMS", "MS", "FOS", "MC"],
     "Day-6": ["DAA", "AI", "OOP-LAB", "OOP-LAB", "NILL"],
 }
 aids_b2 = {
@@ -167,7 +167,7 @@ aids2_links = {
     "MS": "https://meet.google.com/lookup/bwteimvi63",
     "MS-LAB": "https://meet.google.com/lookup/bwteimvi63",
     "OOP": "https://meet.google.com/lookup/cd272ht2kh",
-    "OOP-LAB": "https://meet.google.com/lookup/uut2tetnd",
+    "OOP-LAB": "https://meet.google.com/lookup/fuut2tetnd",
     "MC": "https://meet.google.com/lookup/hkg5hqdvwn",
     "DBMS": "https://meet.google.com/lookup/cb4snvgebh",
     "DBMS-LAB": "https://meet.google.com/lookup/hwpfjiq774",
