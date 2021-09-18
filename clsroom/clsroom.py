@@ -73,6 +73,11 @@ class ClsRoom(commands.Cog):
             force_registration=True,
         )
         self.spam_link.start()
+    
+    def __del__(self):
+        #print("Obj del")
+        self.spam_link.cancel()
+        
 
     @tasks.loop(seconds=300)
     async def spam_link(self):

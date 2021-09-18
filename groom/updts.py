@@ -81,6 +81,10 @@ class Updts(commands.Cog):
         ]
         self.update_courses.start()
 
+    def __del__(self):
+        #print("updts del")
+        self.update_courses.cancel()
+
     @commands.is_owner()
     @commands.command(name="update")
     async def update(self, ctx):
@@ -172,7 +176,7 @@ class Updts(commands.Cog):
     @tasks.loop(seconds=600)
     async def update_courses(self):
         """updates and posts unposted materials into mentioned channel"""
-        print("YES")
+        #print("YES")
         changes=0
         channel = await self.config.guild_from_id(781133714306105394).channel_id()
         v = await self.config.custom("CustomGuildGroup", 781133714306105394).coursematerials()
@@ -192,7 +196,7 @@ class Updts(commands.Cog):
             if "courseWorkMaterial" in v1.keys():
                 
                 limit=(v1["courseWorkMaterial"][0]if "courseWorkMaterial"in v1.keys()else {"courseWorkMaterial":{'id':0}})
-                print(p,end=f"{i}")
+                #print(p,end=f"{i}")
                 ids=[i['id']for i in v1['courseWorkMaterial']]
                 if "courseWorkMaterial" in new.keys():
 
@@ -212,18 +216,25 @@ class Updts(commands.Cog):
                             break
                         # emp.add_field(name="Course",value=f"{c1['name']}  {c1['section']}")
                         emb.add_field(name="Course", value=f"{c1['name']}  {c1['section']}")
-                        emb.add_field(
+                        if "title" in vv1.keys():
+                            
+                            emb.add_field(
                             name="Link to the original post",
-                            value=f"[Original post link]({vv1['alternateLink']})",
-                        )
+                            value=f"[{vv1['title']}]({vv1['alternateLink']})",
+                            )
+                        else:
+                            emb.add_field(
+                            name="Link to the original post",
+                            value=f"[link]({vv1['alternateLink']})",
+                            )
+                        
                         emb.add_field(
                             name="Description",
                             value=(
                                 vv1["description"] if "description" in vv1.keys() else "No description"
                             ),
                         )
-                        if "title" in vv1.keys():
-                            emb.add_field(name="Title", value=f"{vv1['title']}")
+                        
                         #await self.bot.get_user(497379893592719360).send(vv1["creationTime"])
                         d1 = (
                             datetime.strptime(
@@ -278,7 +289,7 @@ class Updts(commands.Cog):
                                 elif l[0] == "form":
                                     emb1.add_field(
                                         name="FORM",
-                                        value=f"[j['form']['title']]({j['form']['formUrl']})",
+                                        value=f"[{j['form']['title']}]({j['form']['formUrl']})",
                                     )
                                 else:
                                     await self.bot.get_user(497379893592719360).send(str(l[0]))
@@ -337,10 +348,13 @@ class Updts(commands.Cog):
                         break
                     # emp.add_field(name="Course",value=f"{c1['name']}  {c1['section']}")
                     emb.add_field(name="Course", value=f"{c1['name']}  {c1['section']}")
-                    emb.add_field(
+                    if 'title' in vv1.keys():
+                        emb.add_field(
                         name="Link to the original post",
-                        value=f"[Original post link]({vv1['alternateLink']})",
+                        value=f"[{vv1['title']}]({vv1['alternateLink']})",
                     )
+                    else:
+                        emb.add_field(name="Link to the original post", value=f"[link]({vv1['alternateLink']})")
                     emb.add_field(
                         name="Description",
                         value=(
@@ -397,7 +411,7 @@ class Updts(commands.Cog):
                             elif l[0] == "form":
                                 emb1.add_field(
                                     name="FORM",
-                                    value=f"[j['form']['title']]({j['form']['formUrl']})",
+                                    value=f"[{j['form']['title']}]({j['form']['formUrl']})",
                                 )
                             else:
                                 await self.bot.get_user(497379893592719360).send(str(l[0]))
@@ -420,6 +434,7 @@ class Updts(commands.Cog):
                         # emp.add_field(name="Course",value=f"{c1['name']}  {c1['section']}")
                         emb1 = emb
                         emb1.set_footer(text=f"{c1['section']}")
+                        
 
                         emb1.add_field(name="DUE: ", value=d1)
                         emb1.add_field(name="Last updated: ", value=d2)
@@ -435,10 +450,10 @@ class Updts(commands.Cog):
 
     @update_courses.after_loop
     async def after_update_courses(self):
-        print("Off")
+        #print("Off")
         self.update_courses.cancel()
     @commands.command()
-    @commands.has_permissions(manage_guild=True)
+    @commands.is_owner()
     async def chmat(self, ctx, toogle: bool):
         """Toogle course material for a channel"""
         async with self.config.guild(ctx.guild).all() as ch:
@@ -449,7 +464,7 @@ class Updts(commands.Cog):
         await ctx.tick()
 
     @commands.command()
-    async def materials(self, ctx, coursecode: str):
+    async def materials(self, ctx, coursecode: str,count: int=5):
         """Display the materials for the course"""
         if coursecode in self.cscode:
             async with ctx.typing():
@@ -463,9 +478,13 @@ class Updts(commands.Cog):
                     "CustomGuildGroup", ctx.guild.id
                 ).coursework()
                 material = materials[i]
-                a = 1
+                a = 0
                 for c in material["courseWorkMaterial"]:
                     color = discord.Color.random()
+                    
+                    a+=1
+                    if a==count:
+                        break;
                     if "materials" in c.keys():
                         d1 = (
                             datetime.strptime(c["creationTime"].split(".")[0], "%Y-%m-%dT%H:%M:%S")
