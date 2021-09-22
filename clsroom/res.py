@@ -27,7 +27,7 @@ mtech2_links = {
     "OS-LAB": "https://meet.google.com/lookup/gysmi2d4b2",
     "OS": "https://meet.google.com/lookup/f67mr7goeg",
     "OOP": " https://meet.google.com/lookup/bpecf37dx4",
-    "OOP-LAB": " https://meet.google.com/lookup/bpecf37dx4",
+    "OOP-LAB": "https://meet.google.com/lookup/f5kjz4yy2p",
     "DS": "https://meet.google.com/lookup/cqbwumwxii",
     "DAA": "https://meet.google.com/lookup/gm5kc24tch",
     "AA-LAB": "https://meet.google.com/lookup/hhqownlv75",
