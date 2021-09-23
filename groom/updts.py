@@ -82,7 +82,7 @@ class Updts(commands.Cog):
         self.update_courses.start()
 
     def __del__(self):
-        #print("updts del")
+        # print("updts del")
         self.update_courses.cancel()
 
     @commands.is_owner()
@@ -143,9 +143,9 @@ class Updts(commands.Cog):
 
     @commands.is_owner()
     @commands.command()
-    async def updatemat(self, ctx,i:int):
+    async def updatemat(self, ctx, i: int):
         """Update course materials and assingments"""
-        
+
         if ctx:
             async with ctx.typing():
                 cm = []
@@ -154,7 +154,10 @@ class Updts(commands.Cog):
                 for c in courses:
                     cw.append(self.service.courses().courseWork().list(courseId=c["id"]).execute())
                     cm.append(
-                        self.service.courses().courseWorkMaterials().list(courseId=c["id"]).execute()
+                        self.service.courses()
+                        .courseWorkMaterials()
+                        .list(courseId=c["id"])
+                        .execute()
                     )
 
                 await self.config.custom("CustomGuildGroup", ctx.guild.id).coursematerials.set(cm)
@@ -165,19 +168,24 @@ class Updts(commands.Cog):
             cm = await self.config.custom("CustomGuildGroup", 781133714306105394).coursematerials()
             cw = await self.config.custom("CustomGuildGroup", 781133714306105394).coursework()
             courses = await self.config.custom("CustomGuildGroup", 781133714306105394).courses()
-            cw[i]=self.service.courses().courseWork().list(courseId=courses[i]["id"]).execute()
-            cm[i]=self.service.courses().courseWorkMaterials().list(courseId=courses[i]["id"]).execute()
+            cw[i] = self.service.courses().courseWork().list(courseId=courses[i]["id"]).execute()
+            cm[i] = (
+                self.service.courses()
+                .courseWorkMaterials()
+                .list(courseId=courses[i]["id"])
+                .execute()
+            )
 
-            await self.config.custom("CustomGuildGroup", 781133714306105394).coursematerials.set(cm)
+            await self.config.custom("CustomGuildGroup", 781133714306105394).coursematerials.set(
+                cm
+            )
             await self.config.custom("CustomGuildGroup", 781133714306105394).coursework.set(cw)
-
-
 
     @tasks.loop(seconds=600)
     async def update_courses(self):
         """updates and posts unposted materials into mentioned channel"""
-        #print("YES")
-        changes=0
+        # print("YES")
+        changes = 0
         channel = await self.config.guild_from_id(781133714306105394).channel_id()
         v = await self.config.custom("CustomGuildGroup", 781133714306105394).coursematerials()
         c = await self.config.custom("CustomGuildGroup", 781133714306105394).courses()
@@ -186,29 +194,38 @@ class Updts(commands.Cog):
 
         for v1, c1, w1, t1, i in zip(v[:11], c[:11], w[:11], t[:11], range(11)):
             p = 0
-            
-            new = self.service.courses(
-                ).courseWorkMaterials(
-                ).list(courseId=c1["id"], pageSize=5
-                ).execute()
-            
-            #await ctx.send(f"```{t1}``` {c1['id']}")
+
+            new = (
+                self.service.courses()
+                .courseWorkMaterials()
+                .list(courseId=c1["id"], pageSize=5)
+                .execute()
+            )
+
+            # await ctx.send(f"```{t1}``` {c1['id']}")
             if "courseWorkMaterial" in v1.keys():
-                
-                limit=(v1["courseWorkMaterial"][0]if "courseWorkMaterial"in v1.keys()else {"courseWorkMaterial":{'id':0}})
-                #print(p,end=f"{i}")
-                ids=[i['id']for i in v1['courseWorkMaterial']]
+
+                limit = (
+                    v1["courseWorkMaterial"][0]
+                    if "courseWorkMaterial" in v1.keys()
+                    else {"courseWorkMaterial": {"id": 0}}
+                )
+                # print(p,end=f"{i}")
+                ids = [i["id"] for i in v1["courseWorkMaterial"]]
                 if "courseWorkMaterial" in new.keys():
 
-                    while p<len(new['courseWorkMaterial'])and limit['id']!=new['courseWorkMaterial'][p]['id']:
+                    while (
+                        p < len(new["courseWorkMaterial"])
+                        and limit["id"] != new["courseWorkMaterial"][p]["id"]
+                    ):
                         vv1 = new["courseWorkMaterial"][p]
                         p += 1
 
-                        if vv1['id']not in ids:
+                        if vv1["id"] not in ids:
                             emb = discord.Embed(
                                 title=f"{t1['profile']['name']['fullName']} : Posted New material"
                             )
-                        elif vv1['id'] in ids:
+                        elif vv1["id"] in ids:
                             emb = discord.Embed(
                                 title=f"{t1['profile']['name']['fullName']} : Updated a material"
                             )
@@ -217,28 +234,32 @@ class Updts(commands.Cog):
                         # emp.add_field(name="Course",value=f"{c1['name']}  {c1['section']}")
                         emb.add_field(name="Course", value=f"{c1['name']}  {c1['section']}")
                         if "title" in vv1.keys():
-                            
+
                             emb.add_field(
-                            name="Link to the original post",
-                            value=f"[{vv1['title']}]({vv1['alternateLink']})",
+                                name="Link to the original post",
+                                value=f"[{vv1['title']}]({vv1['alternateLink']})",
                             )
                         else:
                             emb.add_field(
-                            name="Link to the original post",
-                            value=f"[link]({vv1['alternateLink']})",
+                                name="Link to the original post",
+                                value=f"[link]({vv1['alternateLink']})",
                             )
-                        
+
                         emb.add_field(
                             name="Description",
                             value=(
-                                vv1["description"] if "description" in vv1.keys() else "No description"
+                                vv1["description"]
+                                if "description" in vv1.keys()
+                                else "No description"
                             ),
                         )
-                        
-                        #await self.bot.get_user(497379893592719360).send(vv1["creationTime"])
+
+                        # await self.bot.get_user(497379893592719360).send(vv1["creationTime"])
                         d1 = (
                             datetime.strptime(
-                                vv1["creationTime"].split(".")[0] if len(vv1['creationTime'].split("."))>1 else vv1['creationTime'][:-1],
+                                vv1["creationTime"].split(".")[0]
+                                if len(vv1["creationTime"].split(".")) > 1
+                                else vv1["creationTime"][:-1],
                                 "%Y-%m-%dT%H:%M:%S",
                             )
                             + timedelta(hours=5, minutes=30)
@@ -275,8 +296,7 @@ class Updts(commands.Cog):
                                         name="DRIVEFILE",
                                         value=f"[{j['driveFile']['driveFile']['title']}]({j['driveFile']['driveFile']['alternateLink']})",
                                     )
-                            
-                            
+
                                 elif l[0] == "youtubeVideo":
                                     try:
                                         emb1.add_field(
@@ -301,8 +321,8 @@ class Updts(commands.Cog):
                             emb1.add_field(name="Creation time: ", value=d1)
                             emb1.add_field(name="Last updated: ", value=d2)
                             await self.bot.get_channel(channel).send(embed=emb1)
-                            await self.updatemat(None,i)
-                            changes +=1
+                            await self.updatemat(None, i)
+                            changes += 1
 
                         else:
                             # emb=discord.Embed(title=f"{t1['profile']['name']['fullName']} Posted New material")
@@ -314,23 +334,23 @@ class Updts(commands.Cog):
                             emb1.set_footer(text=f"{c1['section']}")
                             # await ctx.send(channel)
                             await self.bot.get_channel(channel).send(embed=emb1)
-                            await self.updatemat(None,i)
-                            changes +=1
+                            await self.updatemat(None, i)
+                            changes += 1
 
             q = 0
             new = self.service.courses().courseWork().list(courseId=c1["id"], pageSize=5).execute()
             if "courseWork" not in new.keys():
                 continue
-                
-            limit=(w1["courseWork"][0]if "courseWork"in w1.keys()else {"courseWork":{'id':0}})
-            
-            ids=[i['id']for i in w1['courseWork']]
+
+            limit = w1["courseWork"][0] if "courseWork" in w1.keys() else {"courseWork": {"id": 0}}
+
+            ids = [i["id"] for i in w1["courseWork"]]
             # await ctx.send(f"```{t1}``` {c1['id']}")
 
             if "courseWork" in new.keys():
-                
-                while q<len(new['courseWork'])and limit['id']!=new['courseWork'][q]['id']:
-                    
+
+                while q < len(new["courseWork"]) and limit["id"] != new["courseWork"][q]["id"]:
+
                     vv1 = new["courseWork"][q]
                     q += 1
 
@@ -339,7 +359,7 @@ class Updts(commands.Cog):
                             title=f"{t1['profile']['name']['fullName']} : Posted new Assignment",
                             color=discord.Color.random(),
                         )
-                    elif vv1["id"]in ids:
+                    elif vv1["id"] in ids:
                         emb = discord.Embed(
                             title=f"{t1['profile']['name']['fullName']} : Updated a Assignment",
                             color=discord.Color.random(),
@@ -348,13 +368,16 @@ class Updts(commands.Cog):
                         break
                     # emp.add_field(name="Course",value=f"{c1['name']}  {c1['section']}")
                     emb.add_field(name="Course", value=f"{c1['name']}  {c1['section']}")
-                    if 'title' in vv1.keys():
+                    if "title" in vv1.keys():
                         emb.add_field(
-                        name="Link to the original post",
-                        value=f"[{vv1['title']}]({vv1['alternateLink']})",
-                    )
+                            name="Link to the original post",
+                            value=f"[{vv1['title']}]({vv1['alternateLink']})",
+                        )
                     else:
-                        emb.add_field(name="Link to the original post", value=f"[link]({vv1['alternateLink']})")
+                        emb.add_field(
+                            name="Link to the original post",
+                            value=f"[link]({vv1['alternateLink']})",
+                        )
                     emb.add_field(
                         name="Description",
                         value=(
@@ -375,9 +398,15 @@ class Updts(commands.Cog):
                         d1 = d1.strftime("%d-%m-%Y  %a %H:%M")
                     else:
                         d1 = "No due date"
-                    d2 = datetime.strptime(
-                        vv1["updateTime"].split(".")[0]if len(vv1["updateTime"].split("."))>1 else vv1["updateTime"][:-1], "%Y-%m-%dT%H:%M:%S"
-                    ) + timedelta(hours=5, minutes=30)
+                    d2 = (
+                        datetime.strptime(
+                            vv1["updateTime"].split(".")[0]
+                            if len(vv1["updateTime"].split(".")) > 1
+                            else vv1["updateTime"][:-1],
+                            "%Y-%m-%dT%H:%M:%S",
+                        )
+                        + timedelta(hours=5, minutes=30)
+                    )
                     d2 = d2.strftime("%d-%m-%Y  %a %H:%M")
 
                     # await ctx.send(str(vv1.keys())[:1000])
@@ -426,23 +455,21 @@ class Updts(commands.Cog):
                         emb1.add_field(name="DUE: ", value=d1)
                         emb1.add_field(name="Last updated: ", value=d2)
                         await self.bot.get_channel(channel).send(embed=emb1)
-                        await self.updatemat(None,i)
-                        changes +=1
+                        await self.updatemat(None, i)
+                        changes += 1
 
                     else:
                         # emb=discord.Embed(title=f"{t1['profile']['name']['fullName']} Posted New material")
                         # emp.add_field(name="Course",value=f"{c1['name']}  {c1['section']}")
                         emb1 = emb
                         emb1.set_footer(text=f"{c1['section']}")
-                        
 
                         emb1.add_field(name="DUE: ", value=d1)
                         emb1.add_field(name="Last updated: ", value=d2)
                         # await ctx.send(channel)
                         await self.bot.get_channel(channel).send(embed=emb1)
-                        await self.updatemat(None,i)
-                        changes +=1
-        
+                        await self.updatemat(None, i)
+                        changes += 1
 
     @update_courses.before_loop
     async def before_update_courses(self):
@@ -450,8 +477,9 @@ class Updts(commands.Cog):
 
     @update_courses.after_loop
     async def after_update_courses(self):
-        #print("Off")
+        # print("Off")
         self.update_courses.cancel()
+
     @commands.command()
     @commands.is_owner()
     async def chmat(self, ctx, toogle: bool):
@@ -464,7 +492,7 @@ class Updts(commands.Cog):
         await ctx.tick()
 
     @commands.command()
-    async def materials(self, ctx, coursecode: str,count: int=5):
+    async def materials(self, ctx, coursecode: str, count: int = 5):
         """Display the materials for the course"""
         if coursecode in self.cscode:
             async with ctx.typing():
@@ -481,10 +509,10 @@ class Updts(commands.Cog):
                 a = 0
                 for c in material["courseWorkMaterial"]:
                     color = discord.Color.random()
-                    
-                    a+=1
-                    if a==count:
-                        break;
+
+                    a += 1
+                    if a == count:
+                        break
                     if "materials" in c.keys():
                         d1 = (
                             datetime.strptime(c["creationTime"].split(".")[0], "%Y-%m-%dT%H:%M:%S")

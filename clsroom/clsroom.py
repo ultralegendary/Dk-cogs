@@ -72,22 +72,20 @@ class ClsRoom(commands.Cog):
             identifier=12345,
             force_registration=True,
         )
-        #self.spam_link.start()
-    
-    def __del__(self):
-        #print("Obj del")
-        self.spam_link.cancel()
-        
+        self.spam_link.start()
 
-    #@tasks.loop(seconds=300)
-    @commands.command()
-    async def spam_link(self,ctx):
+    def __del__(self):
+        # print("Obj del")
+        self.spam_link.cancel()
+
+    @tasks.loop(seconds=300)
+    async def spam_link(self):
         """dm class link to registered users before 5 mins class starts"""
         now = dt.datetime.now(tz=gettz("Asia/Kolkata"))
         t = now.replace(minute=30) - now
-        
-        if now.hour in [9, 10, 13, 14,15] and t.seconds <= 300 and t.seconds > 0:
-            
+
+        if now.hour in [9, 10, 13, 14, 15] and t.seconds <= 300 and t.seconds > 0:
+
             v = await self.config.all_users()
             for user in v:
                 if v[user]["dm"]:
@@ -95,7 +93,24 @@ class ClsRoom(commands.Cog):
                     if a:
                         await self.bot.get_user(user).send(embed=a)
 
-    #@spam_link.before_loop
+    @commands.command(aliases=["sal"])
+    @commands.is_owner()
+    async def sendalllinks(self, ctx):
+        """send all class link to registered users"""
+        now = dt.datetime.now(tz=gettz("Asia/Kolkata"))
+        v = await self.config.all_users()
+
+        for user in v:
+            if v[user]["dm"]:
+                await self.bot.get_user(user).send("Due to bot down today, links are sent now")
+                for i in [9, 10, 13, 14, 15]:
+                    n = now.replace(hour=i, minute=25)
+
+                    a = await self.link(user, None, None, n)
+                    if a:
+                        await self.bot.get_user(user).send(embed=a)
+
+    @spam_link.before_loop
     async def before_printer(self):
         await self.bot.wait_until_ready()
 
@@ -110,7 +125,6 @@ class ClsRoom(commands.Cog):
 
         async with self.config.user_from_id(ctx.author.id).all() as user_data:
             user_data["dm"] = toggle
-        
 
     @commands.command(aliases=["con"])
     async def connect(self, ctx, dept, batch: int = None):
@@ -237,7 +251,7 @@ class ClsRoom(commands.Cog):
         )
 
     @commands.command(aliases=["links"], usage="[dept] [batch]")
-    async def link(self, ctx, dept=None, batch: int = None):
+    async def link(self, ctx, dept=None, batch: int = None, ext=None):
         """Get the link to the gmeet of your department
 
         Connect your class using `[p]connect` or else give your department and batch number
@@ -272,7 +286,7 @@ class ClsRoom(commands.Cog):
         embs = []
 
         # Getting correct time things
-        time_now = dt.datetime.now(tz=gettz("Asia/Kolkata"))
+        time_now = (ext if ext else dt.datetime.now(tz=gettz("Asia/Kolkata")))
         day_order = res.day_order[time_now.strftime("%Y-%m-%d")]
 
         # Get next working day
@@ -351,14 +365,18 @@ class ClsRoom(commands.Cog):
                 else:
                     subject = sub_obj[-1]
                     # We are in the last hour
-                    if time_obj < dt.time(hour=self.ref_time[-1].hour+1,minute=self.ref_time[-1].minute) and subject != "NILL":
+                    if (
+                        time_obj
+                        < dt.time(hour=self.ref_time[-1].hour + 1, minute=self.ref_time[-1].minute)
+                        and subject != "NILL"
+                    ):
                         if is_dm:
                             return None
                         emb.add_field(
                             name="Ongoing class",
                             value=f"**{subject}**\n *End time:* {self.ref_time[-1].strftime('%I:%M %p')} \n [Google-Meet-link]({dept_links[subject]})",
                         )
-                
+
                 if len(emb.fields) <= 1 and is_dm:
                     return None
 
