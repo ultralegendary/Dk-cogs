@@ -74,8 +74,7 @@ class ClsRoom(commands.Cog):
         )
         self.spam_link.start()
 
-    def __del__(self):
-        # print("Obj del")
+    def cog_unload(self):
         self.spam_link.cancel()
 
     @tasks.loop(seconds=300)
@@ -286,7 +285,7 @@ class ClsRoom(commands.Cog):
         embs = []
 
         # Getting correct time things
-        time_now = (ext if ext else dt.datetime.now(tz=gettz("Asia/Kolkata")))
+        time_now = ext if ext else dt.datetime.now(tz=gettz("Asia/Kolkata"))
         day_order = res.day_order[time_now.strftime("%Y-%m-%d")]
 
         # Get next working day
