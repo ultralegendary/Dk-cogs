@@ -43,7 +43,7 @@ class ClsRoom(commands.Cog):
         )
         self.config.register_user(dept=None, batch=None, dm=False, ctx=None)
 
-        self.ref_time = [dt.time(hr, 30) for hr in [9, 10, 13, 14, 15]]
+        self.ref_time = [dt.time(hr, (30 if hr>12 else 15)) for hr in [9, 10, 13, 14, 15]]
         self.mapper = {
             "cse3b": [res.cse3b_b1, res.cse3b_b2],
             "cse3c": [res.cse3c_b1, res.cse3c_b2],
@@ -72,7 +72,7 @@ class ClsRoom(commands.Cog):
             identifier=12345,
             force_registration=True,
         )
-        self.spam_link.start()
+        #self.spam_link.start()
 
     def cog_unload(self):
         self.spam_link.cancel()
@@ -81,7 +81,8 @@ class ClsRoom(commands.Cog):
     async def spam_link(self):
         """dm class link to registered users before 5 mins class starts"""
         now = dt.datetime.now(tz=gettz("Asia/Kolkata"))
-        t = now.replace(minute=30) - now
+
+        t = now.replace(minute=(30 if now.hour>12 else 15)) - now
 
         if now.hour in [9, 10, 13, 14, 15] and t.seconds <= 300 and t.seconds > 0:
 
@@ -89,7 +90,7 @@ class ClsRoom(commands.Cog):
             for user in v:
                 if v[user]["dm"]:
                     a = await self.link(user)
-                    if a:
+                    if a and self.bot.get_user(user):
                         await self.bot.get_user(user).send(embed=a)
 
     @commands.command(aliases=["sal"])
@@ -286,12 +287,17 @@ class ClsRoom(commands.Cog):
 
         # Getting correct time things
         time_now = ext if ext else dt.datetime.now(tz=gettz("Asia/Kolkata"))
-        day_order = res.day_order[time_now.strftime("%Y-%m-%d")]
+        try:
+            day_order = res.day_order[time_now.strftime("%Y-%m-%d")]
 
-        # Get next working day
-        tmrw = time_now + dt.timedelta(days=1)
-        while res.day_order[tmrw.strftime("%Y-%m-%d")][-1] == "0":
-            tmrw += dt.timedelta(days=1)
+            # Get next working day
+            tmrw = time_now + dt.timedelta(days=1)
+            while res.day_order[tmrw.strftime("%Y-%m-%d")][-1] == "0":
+                tmrw += dt.timedelta(days=1)
+        except KeyError:
+            e=discord.Embed(title="Service ended")
+            e.add_field(name="no timetable exist", value="messege owner for any updates")
+            return await ctx.send(embed=e)
 
         # Hardcoded timedelta
         next_class_day = tmrw.replace(hour=9, minute=30) - time_now
@@ -401,8 +407,12 @@ class ClsRoom(commands.Cog):
     # rollnum cogs added here
     @commands.command()
     async def pnum(self, ctx, option):
+        rollnumber = option.upper()
+        url=f"http://results.skcet.ac.in:615/assets/StudentImage/{rollnumber}.jpg"
+        if rollnumber[2]=='B':
+            url=f"http://result.skasc.ac.in:810/assets/StudentImage/{rollnumber}.jpg"
         emb = discord.Embed(title="Details")
-        emb.set_image(url=f"https://samwyc.codes/images/{option}.jpg")
+        emb.set_image(url=url)
         await menu(ctx, [emb], {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]})
 
     @commands.command()
@@ -420,7 +430,7 @@ class ClsRoom(commands.Cog):
             )
             emb.add_field(name="Department", value=d.iloc[0]["dept"])
             emb.add_field(name="Roll No", value=d.iloc[0]["r_no"])
-            emb.set_image(url=f"https://samwyc.codes/images/{option}.jpg")
+            emb.set_image(url=f"http://results.skcet.ac.in:615/assets/StudentImage/{option}.jpg")
             await menu(ctx, [emb], {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]})
             """
             res='''`Name` {n} {n1}\n`Dept` {d1}\n`Roll` {r}'''.format(n=(d.iloc[0])["name"],n1=(d.iloc[0])["s_name"],d1=(d.iloc[0])["dept"],r=(d.iloc[0])["r_no"])
@@ -431,6 +441,12 @@ class ClsRoom(commands.Cog):
     @commands.command()
     async def rnum(self, ctx, rollnumber: str):
         """Get detailed information about the given rollnumber of a person"""
+        rollnumber = rollnumber.upper()
+        KEY='tyut54yh56thtgh'
+        url=f"http://results.skcet.ac.in:615/assets/StudentImage/{rollnumber}.jpg"
+        if rollnumber[2]=='B':
+            KEY='d564fe54f231d65f4'
+            url=f"http://result.skasc.ac.in:810/assets/StudentImage/{rollnumber}.jpg"
 
         head1 = {
             "user-agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36"
@@ -442,13 +458,14 @@ class ClsRoom(commands.Cog):
             "Content-Type": "application/x-www-form-urlencoded",
             "Origin": "https://pgw.srikrishna.ac.in",
             "Connection": "keep-alive",
-            "Referer": "https://pgw.srikrishna.ac.in/index.php/?key=tyut54yh56thtgh",
+            "Referer": "https://pgw.srikrishna.ac.in/index.php/?key=%s" % KEY,
+            
             "Upgrade-Insecure-Requests": "1",
         }
         async with ctx.typing():
             async with aiohttp.ClientSession() as session:
                 async with session.get(
-                    "https://pgw.srikrishna.ac.in/index.php/?key=tyut54yh56thtgh",
+                    "https://pgw.srikrishna.ac.in/index.php/?key=%s" % KEY,
                     headers=head1,
                 ) as resp:
                     if resp.status != 200:
@@ -472,7 +489,7 @@ class ClsRoom(commands.Cog):
                     )
                     if thing["id"] == "student_name":
                         emb.title = thing.text.split()[0].capitalize() + "'s Details"
-                emb.set_thumbnail(url=f"https://samwyc.codes/images/{rollnumber}.jpg")
+                emb.set_thumbnail(url=url)
                 await ctx.send(embed=emb)
 
     @commands.command()

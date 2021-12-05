@@ -81,7 +81,7 @@ class Updts(commands.Cog):
         ]
         self.update_courses.start()
 
-    def __del__(self):
+    def cog_unload(self):
         # print("updts del")
         self.update_courses.cancel()
 
@@ -208,10 +208,13 @@ class Updts(commands.Cog):
                 limit = (
                     v1["courseWorkMaterial"][0]
                     if "courseWorkMaterial" in v1.keys()
-                    else {"courseWorkMaterial": {"id": 0}}
+                    else {"id": 0}
                 )
                 # print(p,end=f"{i}")
-                ids = [i["id"] for i in v1["courseWorkMaterial"]]
+                if 'courseWorkMaterial'in v1.keys():
+                    ids = [i["id"] for i in v1["courseWorkMaterial"]]
+                else:
+                    ids=[0]
                 if "courseWorkMaterial" in new.keys():
 
                     while (
@@ -248,13 +251,13 @@ class Updts(commands.Cog):
                         emb.add_field(
                             name="Description",
                             value=(
-                                vv1["description"]
+                                vv1["description"][:800]
                                 if "description" in vv1.keys()
                                 else "No description"
                             ),
                         )
 
-                        # await self.bot.get_user(497379893592719360).send(vv1["creationTime"])
+                        #await self.bot.get_user(497379893592719360).send(len(vv1["description"]))
                         d1 = (
                             datetime.strptime(
                                 vv1["creationTime"].split(".")[0]
@@ -342,13 +345,15 @@ class Updts(commands.Cog):
             if "courseWork" not in new.keys():
                 continue
 
-            limit = w1["courseWork"][0] if "courseWork" in w1.keys() else {"courseWork": {"id": 0}}
+            limit = w1["courseWork"][0] if "courseWork" in w1.keys() else{"id": 0}
 
-            ids = [i["id"] for i in w1["courseWork"]]
+            if 'courseWork'in w1.keys():
+                ids = [i["id"] for i in w1["courseWork"]]
+            else:
+                ids = [0]
             # await ctx.send(f"```{t1}``` {c1['id']}")
 
             if "courseWork" in new.keys():
-
                 while q < len(new["courseWork"]) and limit["id"] != new["courseWork"][q]["id"]:
 
                     vv1 = new["courseWork"][q]
@@ -381,9 +386,10 @@ class Updts(commands.Cog):
                     emb.add_field(
                         name="Description",
                         value=(
-                            vv1["description"] if "description" in vv1.keys() else "No description"
+                            vv1["description"][:800] if "description" in vv1.keys() else "No description"
                         ),
                     )
+                    #await self.bot.get_user(497379893592719360).send(len(vv1["description"]))
                     if "dueDate" in vv1.keys():
                         d1 = (
                             datetime(
