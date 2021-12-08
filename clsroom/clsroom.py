@@ -408,12 +408,19 @@ class ClsRoom(commands.Cog):
     @commands.command()
     async def pnum(self, ctx, option):
         rollnumber = option.upper()
-        url=f"http://results.skcet.ac.in:615/assets/StudentImage/{rollnumber}.jpg"
+        r=int(rollnumber[-3:])
+        rollnumber=rollnumber[:-3]
+        n='cet.ac.in:615'
         if rollnumber[2]=='B':
-            url=f"http://result.skasc.ac.in:810/assets/StudentImage/{rollnumber}.jpg"
-        emb = discord.Embed(title="Details")
-        emb.set_image(url=url)
-        await menu(ctx, [emb], {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]})
+            n='asc.ac.in:810'
+        l=[]
+        for i in range(r,r+100):
+            url=f"http://results.sk{n}/assets/StudentImage/{rollnumber}{i:03}.jpg"
+            emb = discord.Embed(title=f"{rollnumber}{i:03}")
+            emb.set_image(url=url)
+            l.append(emb)
+        
+        await menu(ctx, l, DEFAULT_CONTROLS)
 
     @commands.command()
     async def rn(self, ctx, option):
@@ -532,6 +539,7 @@ class ClsRoom(commands.Cog):
                 [f"```{i} ```" + f"**> Page {j+1} / {n}**" for j, i in enumerate(li)],
                 DEFAULT_CONTROLS,
             )
+            
         else:
             await ctx.reply("No name matched with the data base")
 
