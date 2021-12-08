@@ -408,14 +408,15 @@ class ClsRoom(commands.Cog):
     @commands.command()
     async def pnum(self, ctx, option):
         rollnumber = option.upper()
+        
+        n='s.skcet.ac.in:615'
+        if rollnumber[2]=='B':
+            n='.skasc.ac.in:810'
         r=int(rollnumber[-3:])
         rollnumber=rollnumber[:-3]
-        n='cet.ac.in:615'
-        if rollnumber[2]=='B':
-            n='asc.ac.in:810'
         l=[]
         for i in range(r,r+100):
-            url=f"http://results.sk{n}/assets/StudentImage/{rollnumber}{i:03}.jpg"
+            url=f"http://result{n}/assets/StudentImage/{rollnumber}{i:03}.jpg"
             emb = discord.Embed(title=f"{rollnumber}{i:03}")
             emb.set_image(url=url)
             l.append(emb)
