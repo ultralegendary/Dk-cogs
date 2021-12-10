@@ -207,10 +207,14 @@ class ClsRoom(commands.Cog):
         - cse3c
         - mtech2
         """
-
-        user_data = await self.config.user_from_id(ctx.author.id).all()
-        time_now = dt.datetime.now(tz=gettz("Asia/Kolkata"))
-        day_order = res.day_order[time_now.strftime("%Y-%m-%d")]
+        try:
+            user_data = await self.config.user_from_id(ctx.author.id).all()
+            time_now = dt.datetime.now(tz=gettz("Asia/Kolkata"))
+            day_order = res.day_order[time_now.strftime("%Y-%m-%d")]
+        except KeyError:
+            e=discord.Embed(title="Service ended")
+            e.add_field(name="no timetable exist", value="messege owner for any updates")
+            return await ctx.send(embed=e)
 
         if not dept:
             if user_data["dept"] and user_data["batch"]:
