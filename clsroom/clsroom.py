@@ -299,6 +299,7 @@ class ClsRoom(commands.Cog):
             while res.day_order[tmrw.strftime("%Y-%m-%d")][-1] == "0":
                 tmrw += dt.timedelta(days=1)
         except KeyError:
+            #no timetable
             e=discord.Embed(title="Service ended")
             e.add_field(name="no timetable exist", value="messege owner for any updates")
             return await ctx.send(embed=e)
@@ -414,7 +415,7 @@ class ClsRoom(commands.Cog):
         rollnumber = option.upper()
         
         n='s.skcet.ac.in:615'
-        if rollnumber[2]=='B':
+        if rollnumber[2:3]=='B':
             n='.skasc.ac.in:810'
         r=int(rollnumber[-3:])
         rollnumber=rollnumber[:-3]
@@ -456,7 +457,7 @@ class ClsRoom(commands.Cog):
         rollnumber = rollnumber.upper()
         KEY='tyut54yh56thtgh'
         url=f"http://results.skcet.ac.in:615/assets/StudentImage/{rollnumber}.jpg"
-        if rollnumber[2]=='B':
+        if rollnumber[2:3]=='B':
             KEY='d564fe54f231d65f4'
             url=f"http://result.skasc.ac.in:810/assets/StudentImage/{rollnumber}.jpg"
 
