@@ -498,11 +498,12 @@ class ClsRoom(commands.Cog):
                 for thing in soup.findAll(id=lambda L: L and L.startswith("student_")):
                     emb.add_field(
                         name=thing["id"].replace("student_", "").capitalize(),
-                        value=thing.text.title(),
+                        value=thing.text.title()if thing.text.title() else "​",
                     )
                     if thing["id"] == "student_name":
                         emb.title = thing.text.split()[0].capitalize() + "'s Details"
                 emb.set_thumbnail(url=url)
+                
                 await ctx.send(embed=emb)
 
     @commands.command()
