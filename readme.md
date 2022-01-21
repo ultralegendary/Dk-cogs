@@ -1,5 +1,5 @@
 # Dk-cogs V3
-UwU!!!! Cogs under development  
+Cogs made for personal use and for my friends nothing more nothing less...
 Discord User: {dhiva}#1852  
 
-*Am bored, make me busy >_>*
+**
