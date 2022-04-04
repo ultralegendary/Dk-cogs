@@ -1,0 +1,5 @@
+aiohttp
+bs4
+Redbot-Discord==3.4.0
+discord
+tabulate
