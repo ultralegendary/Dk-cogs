@@ -42,8 +42,18 @@ class ClsRoom(commands.Cog):
             force_registration=False,
         )
         self.config.register_user(dept=None, batch=None, dm=False, ctx=None)
+        
 
-        self.ref_time = [dt.time(hr, (30 if hr>12 else 15)) for hr in [9, 10, 13, 14, 15]]
+        self.config1 = Config.get_conf(
+            self,
+            identifier=12334,
+            force_registration=False,
+        )
+
+        self.config1.register_user(Name=[], dob=[],last_activity="")
+
+
+        self.ref_time = [dt.time(hr, (30 if hr>10 else 15)) for hr in [9, 10, 11, 12]]
         self.mapper = {
             "cse3b": [res.cse3b_b1, res.cse3b_b2],
             "cse3c": [res.cse3c_b1, res.cse3c_b2],
@@ -67,24 +77,49 @@ class ClsRoom(commands.Cog):
         self.ai_data = pd.read_csv(
             os.path.join(os.path.abspath(__file__ + "/../../"), "clsroom/resource/ai.csv")
         )
-        self.config = Config.get_conf(
-            self,
-            identifier=12345,
-            force_registration=True,
-        )
-        #self.spam_link.start()
+        
+        self.spam_dob.start()
+        # self.spam_link.start()
 
     def cog_unload(self):
-        self.spam_link.cancel()
+        self.spam_dob.cancel()
+        pass
+        # self.spam_link.cancel()
+    @tasks.loop(hours=24)
+    async def spam_dob(self):
+        """send remainder to dob remainder on date mentioned"""
+        now = dt.datetime.now(tz=gettz("Asia/Kolkata")).strftime("%d%m")
+        v = await self.config1.all_users()
+        print(v)
+        for user in v:
+            if v[user]["last_activity"]==now:
+                return
+            await self.config1.user_from_id(user).last_activity.set(now)
+            v[user]["last_activity"]=now
+            dobs=v[user]["dob"]
+            
+            for i,date in enumerate(dobs):
+                if date[:4]==now:
+                    emb=discord.Embed(title="See who's birthday it is!", description="One of your friend seems to celebrate birthday today!", color=0x9732a8)
+                    emb.add_field(name="Name", value=v[user]["Name"][i])
+                    emb.add_field(name="DOB", value=v[user]["dob"][i][:2]+"-"+v[user]["dob"][i][2:4]+"-"+v[user]["dob"][i][4:])
+                    await self.bot.get_user(user).send(embed=emb)
+        #update config1
+
+    @spam_dob.before_loop
+    async def before_spam_dob(self):
+        await self.bot.wait_until_ready()
+        
+
 
     @tasks.loop(seconds=300)
     async def spam_link(self):
         """dm class link to registered users before 5 mins class starts"""
         now = dt.datetime.now(tz=gettz("Asia/Kolkata"))
 
-        t = now.replace(minute=(30 if now.hour>12 else 15)) - now
+        t = now.replace(minute=(30 if now.hour>10 else 15)) - now
 
-        if now.hour in [9, 10, 13, 14, 15] and t.seconds <= 300 and t.seconds > 0:
+        if now.hour in [9, 10, 11, 12] and t.seconds <= 300 and t.seconds > 0:
 
             v = await self.config.all_users()
             for user in v:
@@ -103,7 +138,7 @@ class ClsRoom(commands.Cog):
         for user in v:
             if v[user]["dm"]:
                 await self.bot.get_user(user).send("Due to bot down today, links are sent now")
-                for i in [9, 10, 13, 14, 15]:
+                for i in [9, 10, 11, 12]:
                     n = now.replace(hour=i, minute=25)
 
                     a = await self.link(user, None, None, n)
@@ -212,8 +247,8 @@ class ClsRoom(commands.Cog):
             time_now = dt.datetime.now(tz=gettz("Asia/Kolkata"))
             day_order = res.day_order[time_now.strftime("%Y-%m-%d")]
         except KeyError:
-            e=discord.Embed(title="Service ended")
-            e.add_field(name="no timetable exist", value="messege owner for any updates")
+            e=discord.Embed(title="No Day-order found")
+            e.add_field(name="no timetable exist", value="will update soon")
             return await ctx.send(embed=e)
 
         if not dept:
@@ -237,13 +272,14 @@ class ClsRoom(commands.Cog):
 
         if dept not in self.mapper:
             return await ctx.send_help()
-
+        if not self.get_sub_obj(dept, batch) :
+            return await ctx.send("No timetable found for this department")
         table = tabulate(
             [
                 [k + " -->" if day_order == k else k] + [period for period in v]
                 for k, v in self.get_sub_obj(dept, batch).items()
             ],
-            headers=["", "9:30", "10:30", "1:30", "2:30", "3:30"],
+            headers=["", "9:15", "10:15", "11:30", "12:30", "1:30"],
             tablefmt="presto",
             colalign=("left",),
         )
@@ -300,8 +336,8 @@ class ClsRoom(commands.Cog):
                 tmrw += dt.timedelta(days=1)
         except KeyError:
             #no timetable
-            e=discord.Embed(title="Service ended")
-            e.add_field(name="no timetable exist", value="messege owner for any updates")
+            e=discord.Embed(title="Cant find day-order")
+            e.add_field(name="no timetable exist", value="will update soon")
             return await ctx.send(embed=e)
 
         # Hardcoded timedelta
@@ -329,9 +365,25 @@ class ClsRoom(commands.Cog):
             emb = discord.Embed(color=discord.Color.green())
             emb.set_footer(text=f"{day_order}  |  Batch-{batch}")
             emb.set_author(name=self.title_map[dept])
-            dept_links = getattr(res, dept + "_links")
+            if dept in ["cse2c","cse3b"]:
+                dept_links=getattr(res, dept+str(batch) + "_links")
+            else:
+                dept_links = getattr(res, dept + "_links")
+            try:
+                sub_obj = self.get_sub_obj(dept, batch)[day_order]
+            except KeyError:
+                e=discord.Embed(title="Your time table is not with us!")
+                
+                if is_dm:
+                    if dt.datetime.now().hour ==9:
+                        e.add_field(name="No timetable exist for your class and you have registered for dm links", value="Classes are back online!, send your time table to me {dhiva}#1852")
+                        return e
+                    return None
+                else:
+                    e.add_field(name="No timetable exist for your class and you are asking for links?", value="Classes are back online!, send your time table to me {dhiva}#1852")
+                    return await ctx.send(embed=e)
 
-            sub_obj = self.get_sub_obj(dept, batch)[day_order]
+                
             time_obj = time_now.time()
             # time_obj = dt.time(16, 28) #debug
 
@@ -412,12 +464,16 @@ class ClsRoom(commands.Cog):
     # rollnum cogs added here
     @commands.command()
     async def pnum(self, ctx, option):
+        """displayes photos of given roll number"""
         rollnumber = option.upper()
         
-        n='s.skcet.ac.in:615'
+        n='s.skcet.ac.in:611'
         if rollnumber[2:3]=='B':
             n='.skasc.ac.in:810'
-        r=int(rollnumber[-3:])
+        if rollnumber[-3:].isdigit():
+            r=int(rollnumber[-3:])
+        else:
+            return await ctx.send("Invalid roll number")            
         rollnumber=rollnumber[:-3]
         l=[]
         for i in range(r,r+100):
@@ -443,7 +499,7 @@ class ClsRoom(commands.Cog):
             )
             emb.add_field(name="Department", value=d.iloc[0]["dept"])
             emb.add_field(name="Roll No", value=d.iloc[0]["r_no"])
-            emb.set_image(url=f"http://results.skcet.ac.in:615/assets/StudentImage/{option}.jpg")
+            emb.set_image(url=f"http://results.skcet.ac.in:611/assets/StudentImage/{option}.jpg")
             await menu(ctx, [emb], {"\N{CROSS MARK}": DEFAULT_CONTROLS["\N{CROSS MARK}"]})
             """
             res='''`Name` {n} {n1}\n`Dept` {d1}\n`Roll` {r}'''.format(n=(d.iloc[0])["name"],n1=(d.iloc[0])["s_name"],d1=(d.iloc[0])["dept"],r=(d.iloc[0])["r_no"])
@@ -456,7 +512,7 @@ class ClsRoom(commands.Cog):
         """Get detailed information about the given rollnumber of a person"""
         rollnumber = rollnumber.upper()
         KEY='tyut54yh56thtgh'
-        url=f"http://results.skcet.ac.in:615/assets/StudentImage/{rollnumber}.jpg"
+        url=f"http://results.skcet.ac.in:611/assets/StudentImage/{rollnumber}.jpg"
         if rollnumber[2:3]=='B':
             KEY='d564fe54f231d65f4'
             url=f"http://result.skasc.ac.in:810/assets/StudentImage/{rollnumber}.jpg"
@@ -620,19 +676,19 @@ class ClsRoom(commands.Cog):
                 "Content-Length": "41",
                 "Content-Type": "application/x-www-form-urlencoded",
                 # "Cookie": "ci_session=8geukb5t1h4t3nkqo82fa7l2l9ok49qi",
-                "Host": "results.skcet.ac.in:612",
-                "Origin": "http://results.skcet.ac.in:612",
-                "Referer": "http://results.skcet.ac.in:612/",
+                "Host": "results.skcet.ac.in:611",
+                "Origin": "http://results.skcet.ac.in:611",
+                "Referer": "http://results.skcet.ac.in:611/",
                 "Upgrade-Insecure-Requests": "1",
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0",
             }
             r = requests.post(
-                "http://results.skcet.ac.in:612/index.php/Welcome/Login",
+                "http://results.skcet.ac.in:611/index.php/Welcome/Login",
                 data=r_form_data,
                 headers=r_headers,
             )
             if (
-                b"http://results.skcet.ac.in:612/assets/StudentImage/"
+                b"http://results.skcet.ac.in:611/assets/StudentImage/"
                 + bytes(rollnum, encoding="utf8")
                 not in r.content
             ):
@@ -646,20 +702,20 @@ class ClsRoom(commands.Cog):
                 return
 
             r_headers1 = {
-                "Host": "results.skcet.ac.in:612",
+                "Host": "results.skcet.ac.in:611",
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0",
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
                 "Accept-Language": "en-US,en;q=0.5",
                 #'Accept-Encoding': 'gzip, deflate',
                 "Connection": "keep-alive",
-                "Referer": "http://results.skcet.ac.in:612/index.php/Welcome/Login",
+                "Referer": "http://results.skcet.ac.in:611/index.php/Welcome/Login",
                 #'Cookie': 'ci_session=mtq22fefrtr9l6l8djcjircu375h0mro',
                 "Cookie": "ci_session=" + r.cookies.get_dict()["ci_session"],
                 "Upgrade-Insecure-Requests": "1",
             }
 
             r1 = requests.post(
-                "http://results.skcet.ac.in:612/index.php/Result",
+                "http://results.skcet.ac.in:611/index.php/Result",
                 cookies=r.cookies,
                 headers=r_headers1,
             )
@@ -667,19 +723,19 @@ class ClsRoom(commands.Cog):
             if soup.findAll("tr") == []:
                 """expection with cookies"""
                 r_headers1 = {
-                    "Host": "results.skcet.ac.in:612",
+                    "Host": "results.skcet.ac.in:611",
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0",
                     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
                     "Accept-Language": "en-US,en;q=0.5",
                     #'Accept-Encoding': 'gzip, deflate',
                     "Connection": "keep-alive",
-                    "Referer": "http://results.skcet.ac.in:612/index.php/Welcome/Login",
+                    "Referer": "http://results.skcet.ac.in:611/index.php/Welcome/Login",
                     #'Cookie': 'ci_session='+r.cookies.get_dict()['ci_session'],
                     "Cookie": "ci_session=mtq22fefrtr9l6l8djcjircu375h0mro",
                     "Upgrade-Insecure-Requests": "1",
                 }
                 r1 = requests.post(
-                    "http://results.skcet.ac.in:612/index.php/Result",
+                    "http://results.skcet.ac.in:611/index.php/Result",
                     cookies=r.cookies,
                     headers=r_headers1,
                 )
@@ -712,3 +768,50 @@ class ClsRoom(commands.Cog):
                 )
             except:
                 await ctx.send(f"Somthing went wrong at the last moment")
+
+
+    @commands.group(pass_context=True)
+    async def bday(self, ctx):
+        '''remainds of a person birthday'''
+
+    @bday.command()
+    async def add(self, ctx,name:str,dob:str):
+        '''add birth date to reminder
+        date pattern: `ddmmyyyy`'''
+        if len(dob) != 8:
+            await ctx.send_help()
+            return
+        try:
+            dt.datetime.strptime(dob, "%d%m%Y")
+        except:
+            await ctx.send_help()
+            return
+        await ctx.reply("Added dob successfully, you will be reminded on the birth date if i am alive")
+        async with self.config1.user_from_id(ctx.author.id).all() as user_data:
+            user_data['dob'].append( dob)
+            user_data['Name'].append( name)
+    
+    @bday.command(name="list")
+    async def blist(self, ctx):
+        '''list all your birth dates for a user'''
+        async with self.config1.user_from_id(ctx.author.id).all() as user_data:
+            if len(user_data['dob']) ==0:
+                await ctx.reply("You have not set any birthdays")
+                return
+            string="```py\n"
+            for name,dob in zip(user_data['Name'],user_data['dob']):
+                dob=dob[:2]+"-"+dob[2:4]+"-"+dob[4:]
+                string+="1. "+name+": "+dob+"\n"
+            string+="```"
+            await ctx.reply(string)
+    @bday.command(name="remove")
+    async def bremove(self, ctx,index:int):
+        '''remove a birthday reminder from list
+        `index`: index of the tuple to remove'''
+        async with self.config1.user_from_id(ctx.author.id).all() as user_data:
+            if index>len(user_data['dob']):
+                await ctx.reply("Index out of range")
+                return
+            user_data['dob'].pop(index-1)
+            user_data['Name'].pop(index-1)
+            await ctx.reply("Removed successfully")

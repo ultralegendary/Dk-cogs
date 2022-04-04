@@ -67,17 +67,15 @@ class Updts(commands.Cog):
         self.service = build("classroom", "v1", credentials=creds)
         self.bot = bot
         self.cscode = [
-            "MS",
-            "AI",
-            "OOP",
-            "MC",
-            "OOP-LAB",
-            "DBMS",
-            "DBMS-LAB",
-            "DAA",
-            "FOS-LAB",
-            "FOS",
-            "A",
+            "LS",
+            "ML-LAB",
+            "CN-LAB",
+            "RVS",
+            "SE",
+            "ML",
+            "CN",
+            "BE",
+            "DWM",
         ]
         self.update_courses.start()
 
@@ -94,7 +92,7 @@ class Updts(commands.Cog):
             courses = self.service.courses().list().execute().get("courses", [])
             await self.config.custom("CustomGuildGroup", ctx.guild.id).courses.set(courses)
             teachers = []
-            for c in courses[:11]:
+            for c in courses[:9]:
                 tech = (
                     self.service.courses()
                     .teachers()
@@ -108,7 +106,7 @@ class Updts(commands.Cog):
         await ctx.tick()
 
     @commands.command()
-    async def courses(self, ctx, count: int = 11):
+    async def courses(self, ctx, count: int = 9):
         """Lists the latest courses"""
         async with ctx.typing():
             courses = await self.config.custom("CustomGuildGroup", ctx.guild.id).courses()

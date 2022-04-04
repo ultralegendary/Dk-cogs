@@ -16,12 +16,12 @@ def create_dates(sdate, edate):
 
 # mtech
 mtech2 = {
-    "Day-1": ["DS", "CA", "OS-LAB", "OS-LAB"],
-    "Day-2": ["OOP", "DAA", "DS", "OS"],
-    "Day-3": ["OS", "CA", "DAA", "AC"],
-    "Day-4": ["DAA", "OOP", "AA-LAB", "AA-LAB"],
-    "Day-5": ["CA", "DS", "OOP-LAB", "OOP-LAB"],
-    "Day-6": ["OOP", "DS", "OS", "AC"],
+    # "Day-1": ["DS", "CA", "OS-LAB", "OS-LAB"],
+    # "Day-2": ["OOP", "DAA", "DS", "OS"],
+    # "Day-3": ["OS", "CA", "DAA", "AC"],
+    # "Day-4": ["DAA", "OOP", "AA-LAB", "AA-LAB"],
+    # "Day-5": ["CA", "DS", "OOP-LAB", "OOP-LAB"],
+    # "Day-6": ["OOP", "DS", "OS", "AC"],
 }
 mtech2_links = {
     "OS-LAB": "https://meet.google.com/lookup/gysmi2d4b2",
@@ -37,33 +37,37 @@ mtech2_links = {
 
 # CSE 3b
 cse3b_b1 = {
-    "Day-1": ["MES", "PL", "TOC", "OOAD"],
-    "Day-2": ["DCN", "BlockChain", "AI", "MES-LAB"],
-    "Day-3": ["OOAD", "TOC", "MES", "AI"],
-    "Day-4": ["DCN", "Mini Project", "BlockChain", "PL"],
-    "Day-5": ["TOC", "BlockChain", "DCN", "CN-LAB"],
-    "Day-6": ["MES", "OOAD", "AI", "AI-LAB"],
+    "Day-1": ["VCD", "PL", "DA", "PE4"],
+    "Day-2": ["OE1", "PE3", "CD-LAB", "CD-LAB"],
+    "Day-3": ["PE4", "VCD", "PCD", "OE1"],
+    "Day-4": ["PCD", "VCD", "PE3", "PL"],
+    "Day-5": ["OE1", "PE3", "DA", "DA-LAB"],
+    "Day-6": ["PCD", "PE4", "DA", "VCD-LAB"],
 }
 cse3b_b2 = {
-    "Day-1": ["OOAD", "PL", "AI", "DCN"],
-    "Day-2": ["BlockChain", "TOC", "DCN", "CN-LAB"],
-    "Day-3": ["AI", "BlockChain", "DCN", "OOAD"],
-    "Day-4": ["TOC", "Mini Project", "MES", "PL"],
-    "Day-5": ["MES", "BlockChain", "AI", "AI-LAB"],
-    "Day-6": ["BlockChain", "TOC", "MES", "MES-LAB"],
+    # "Day-1": ["PE4", "PL", "VCD", "DA"],
+    # "Day-2": ["OE1", "PCD", "PE3", "DA-LAB"],
+    # "Day-3": ["VCD", "PE3", "DA", "PCD"],
+    # "Day-4": ["DA", "PE4", "PCD", "PL"],
+    # "Day-5": ["OE1", "PE4", "VCD", "VCD-LAB"],
+    # "Day-6": ["PE3", "OE1", "CD-LAB", "CD-LAB"],
 }
-cse3b_links = {
-    "MES": "https://meet.google.com/lookup/drjtqe5rrt?authuser=0&hs=179",
-    "MES-LAB": "https://meet.google.com/lookup/b6n5riqe52?authuser=0&hs=179",
-    "AI": "https://meet.google.com/lookup/dolf4bwujq?authuser=0&hs=179",
-    "AI-LAB": "https://meet.google.com/lookup/gtmfjssr4l?authuser=0&hs=179",
-    "OOAD": "https://meet.google.com/lookup/dbfwgpvrn2?authuser=0&hs=179",  #
-    "Mini Project": "https://meet.google.com/lookup/hq5d6vy37a?authuser=0&hs=179",
-    "TOC": "https://meet.google.com/lookup/eaepkp5z27?authuser=0&hs=179",
-    "BlockChain": "https://meet.google.com/lookup/buvvpfu5cb?authuser=0&hs=179",
-    "DCN": "https://meet.google.com/lookup/h4f3exqgdy?authuser=0&hs=179",
-    "CN-LAB": "https://meet.google.com/lookup/cvkrksow2c?authuser=0&hs=179",
-    "PL": "https://youtube.com/watch?v=dQw4w9WgXcQ",
+cse3b1_links = {
+    
+    "OE1": "https://meet.google.com/yqr-zxie-rxs",
+    "VCD": "https://meet.google.com/agu-kzaf-vkr",
+    "VCD-LAB": "https://meet.google.com/agu-kzaf-vkr",
+    "PE4": "https://meet.google.com/unr-yapc-zzf",
+    "DA": "https://meet.google.com/qte-dfya-eyy",
+    "DA-LAB": "https://meet.google.com/qte-dfya-eyy",
+    "CD-LAB": "https://meet.google.com/gfd-avfv-hqc",
+    "PE3": "https://meet.google.com/hqg-uttt-uyr",
+    "PCD": "https://meet.google.com/ftv-tsnh-fir",
+    "PL":"https://youtube.com/watch?v=dQw4w9WgXcQ",
+
+}
+cse3b2_links={
+
 }
 """linkscse3c = {
     "TOC": "https://meet.google.com/lookup/cssg54qozm?authuser=1&hs=179",
@@ -80,20 +84,20 @@ cse3b_links = {
 """
 # CSE 3c
 cse3c_b1 = {
-    "Day-1": ["PE1", "PL", "AI", "MES"],
-    "Day-2": ["TOC", "PE2", "MES", "DCN-LAB"],
-    "Day-3": ["AI", "TOC", "DCN", "PE1"],
-    "Day-4": ["MES", "MES-LAB", "PE2", "PL"],
-    "Day-5": ["PE1", "PE2", "DCN", "AI-LAB"],
-    "Day-6": ["DCN", "AI", "TOC", "Mini Project"],
+    # "Day-1": ["PE1", "PL", "AI", "MES"],
+    # "Day-2": ["TOC", "PE2", "MES", "DCN-LAB"],
+    # "Day-3": ["AI", "TOC", "DCN", "PE1"],
+    # "Day-4": ["MES", "MES-LAB", "PE2", "PL"],
+    # "Day-5": ["PE1", "PE2", "DCN", "AI-LAB"],
+    # "Day-6": ["DCN", "AI", "TOC", "Mini Project"],
 }
 cse3c_b2 = {
-    "Day-1": ["AI", "PL", "PE1", "TOC"],
-    "Day-2": ["PE2", "TOC", "DCN", "AI-LAB"],
-    "Day-3": ["TOC", "PE2", "PE1", "MES"],
-    "Day-4": ["AI", "DCN-LAB", "DCN", "PL"],
-    "Day-5": ["DCN", "AI", "MES", "MES-LAB"],
-    "Day-6": ["PE2", "PE1", "MES", "Mini Project"],
+    # "Day-1": ["AI", "PL", "PE1", "TOC"],
+    # "Day-2": ["PE2", "TOC", "DCN", "AI-LAB"],
+    # "Day-3": ["TOC", "PE2", "PE1", "MES"],
+    # "Day-4": ["AI", "DCN-LAB", "DCN", "PL"],
+    # "Day-5": ["DCN", "AI", "MES", "MES-LAB"],
+    # "Day-6": ["PE2", "PE1", "MES", "Mini Project"],
 }
 
 cse3c_links = {
@@ -111,24 +115,24 @@ cse3c_links = {
 
 # CSE 2c
 cse2c_b1 = {
-    "Day-1": ["MS", "CA", "CADS", "DLD-LAB", "DLD-LAB"],
-    "Day-2": ["OS", "CA", "SEM", "CADS", "NILL"],
-    "Day-3": ["DLD", "MS", "OS", "OS-LAB", "NILL"],
-    "Day-4": ["SEM", "SEM-LAB", "OS", "DLD", "NILL"],
-    "Day-5": ["MS", "SEM", "CADS", "CADS-LAB", "NILL"],
-    "Day-6": ["CA", "DLD", "MS-LAB", "MS-LAB", "MC"],
+    "Day-1": ["WT", "TOC", "RVS", "DAA"],
+    "Day-2": ["OOPJ", "TOC", "DBMS", "RVS"],
+    "Day-3": ["OOPJ", "DAA", "WT", "OOPJ-LAB"],
+    "Day-4": ["DBMS", "OOPJ", "DBMS-LAB", "DBMS-LAB"],
+    "Day-5": ["WT", "DBMS", "RVS", "WT-LAB"],
+    "Day-6": ["TOC", "DAA", "RVS-LAB", "RVS-LAB"],
 }
 
 cse2c_b2 = {
-    "Day-1": ["CADS", "DLD", "SEM", "MS-LAB", "MS-LAB"],
-    "Day-2": ["DLD", "CADS", "MS", "OS-LAB", "NILL"],
-    "Day-3": ["CA", "OS", "SEM", "SEM-LAB", "NILL"],
-    "Day-4": ["CA", "CADS-LAB", "CADS", "OS", "NILL"],
-    "Day-5": ["OS", "CA", "MS", "DLD", "NILL"],
-    "Day-6": ["MS", "SEM", "DLD-LAB", "DLD-LAB", "MC"],
+    "Day-1": ["DAA", "DBMS", "WT-LAB", "OOPJ-LAB"],
+    "Day-2": ["DAA", "WT", "DBMS-LAB", "DBMS-LAB"],
+    "Day-3": ["DBMS", "OOPJ", "RVS-LAB", "RVS-LAB"],
+    "Day-4": ["TOC", "RVS", "WT", "TOC"],
+    "Day-5": ["RVS", "TOC", "DAA", "OOPJ"],
+    "Day-6": ["RVS", "DBMS", "WT", "OOPJ"],
 }
 
-cse2c_links = {
+cse2c1_links = {
     "MS": "https://meet.google.com/lookup/awwqw6otky?authuser=1&hs=179",
     "MS-LAB": "https://meet.google.com/lookup/awwqw6otky?authuser=1&hs=179",
     "CA": "https://meet.google.com/lookup/dihoecr5x6?authuser=1&hs=179",
@@ -141,26 +145,50 @@ cse2c_links = {
     "OS": "https://meet.google.com/pnwejxkxoy",
     "OS-LAB": "https://meet.google.com/kxadyxvhiy",
     "MC": "https://meet.google.com/lookup/hi6nyyrn5d",
+
+    "OOPJ" : "https://meet.google.com/ehk-jirs-jan",
+    "DAA" : "https://meet.google.com/yzt-iayi-yft",
+    "OOPJ-LAB" : "https://meet.google.com/tug-okbf-zwq",
+    "RVS" : "https://meet.google.com/fnq-isjg-puq",
+    "RVS-LAB" : "https://meet.google.com/fnq-isjg-puq",
+    "WT" : " https://meet.google.com/zfw-gyum-rai",
+    "WT-LAB" : " https://meet.google.com/zfw-gyum-rai",
+    "DBMS-LAB" : "https://meet.google.com/zor-ttut-yzd",
+    "DBMS" : "https://meet.google.com/crn-rwwz-zut",
+    "TOC" : "https://meet.google.com/aba-wixw-jkz",
 }
+cse2c2_links={
+  "OOPJ" : "https://meet.google.com/ehk-jirs-jan",
+  "DAA" : "https://meet.google.com/yzt-iayi-yft",
+  "OOPJ-LAB" : "https://meet.google.com/tug-okbf-zwq",
+  "RVS-LAB" : "https://meet.google.com/fnq-isjg-puq",
+  "RVS" : "https://meet.google.com/fnq-isjg-puq",
+  "WT" : " https://meet.google.com/zfw-gyum-rai",
+  "WT-LAB" : " https://meet.google.com/zfw-gyum-rai",
+  "DBMS" : "https://meet.google.com/crn-rwwz-zut",
+  "TOC" : "https://meet.google.com/aba-wixw-jkz",
+  "DBMS-LAB" : "https://meet.google.com/fbs-bmch-hza"
+}
+
 
 
 # AI
 aids_b1 = {
-    # time  9:30,10:30,1:30,2:30,3:30
-    "Day-1": ["MS", "DAA", "OOP", "FOS", "NILL"],
-    "Day-2": ["DBMS", "MS", "AI", "DBMS-LAB", "NILL"],
-    "Day-3": ["OOP", "FOS", "DBMS", "MS-LAB", "MS-LAB"],
-    "Day-4": ["FOS-LAB", "FOS-LAB", "OOP", "DAA", "NILL"],
-    "Day-5": ["AI", "DBMS", "MS", "FOS", "MC"],
-    "Day-6": ["DAA", "AI", "OOP-LAB", "OOP-LAB", "NILL"],
+    # time  9:15,10:15,11:30,12:30
+    "Day-1": ["SE", "ML", "DCN", "RVS" ],
+    "Day-2": ["RVS", "BE", "ML", "DCN" ],
+    "Day-3": ["SE", "DWM", "ML-LAB", "ML-LAB",],
+    "Day-4": ["BE", "DWM", "SE", "ML" ],
+    "Day-5": ["CN-LAB", "CN-LAB", "RVS-LAB", "RVS-LAB"],
+    "Day-6": ["DWM", "RVS", "BE", "DCN"],
 }
 aids_b2 = {
-    "Day-1": ["DBMS", "OOP", "FOS", "MS", "NILL"],
-    "Day-2": ["DAA", "FOS", "OOP-LAB", "OOP-LAB", "NILL"],
-    "Day-3": ["MS", "AI", "DAA", "FOS-LAB", "FOS-LAB"],
-    "Day-4": ["DAA", "OOP", "MS", "AI", "NILL"],
-    "Day-5": ["MS-LAB", "MS-LAB", "AI", "DBMS", "MC"],
-    "Day-6": ["OOP", "DBMS", "FOS", "DBMS-LAB", "NILL"],
+    "Day-1": ["ML", "DWM", "RVS", "BE"],
+    "Day-2": ["DCN", "DWM", "SE", "ML"],
+    "Day-3": ["CN-LAB", "CN-LAB", "DWM", "BE"],
+    "Day-4": ["RVS", "BE", "DCN", "SE"],
+    "Day-5": ["RVS-LAB", "RVS-LAB", "ML-LAB", "ML-LAB"],
+    "Day-6": ["SE", "ML", "DCN", "RVS"],
 }
 
 aids2_links = {
@@ -176,6 +204,16 @@ aids2_links = {
     "FOS": "https://meet.google.com/pcy-pzbk-she",
     "FOS-LAB": "https://meet.google.com/pcn-ibbc-hou",
     "NILL": "https://youtube.com/watch?v=dQw4w9WgXcQ",
+    "DWM": "https://meet.google.com/kpv-zboh-vib",
+    "BE":"https://meet.google.com/rty-cxke-etv",
+    "DCN":"https://meet.google.com/vmd-eugo-xhu",
+    "ML":"https://meet.google.com/zje-quqx-doq",
+    "SE":"https://meet.google.com/wqa-nqnz-dke",
+    "RVS":"https://meet.google.com/yyc-devv-wqh",
+    "CN-LAB":"https://meet.google.com/rbh-yavb-wmu",
+    "ML-LAB":"https://meet.google.com/dtd-dpnv-xxi",
+    "RVS-LAB":"https://meet.google.com/yyc-devv-wqh",
+
 }
 
 day_order = {
@@ -299,4 +337,11 @@ day_order = {
     "2021-11-23": "Day-4",
     "2021-11-24": "Day-5",
     "2021-11-25": "Day-0",
-}
+    "2022-01-24": "Day-1",
+    "2022-01-25": "Day-2",
+    "2022-01-26": "Day-0",
+    "2022-01-27": "Day-3",
+    "2022-01-28": "Day-4",
+    "2022-01-29": "Day-5",
+    "2022-01-30": "Day-6",
+    }
