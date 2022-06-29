@@ -1,5 +1,7 @@
 aiohttp
 bs4
-Redbot-Discord==3.4.0
-discord
 tabulate
+pyparsing
+google-api-python-client 
+google-auth-httplib2 
+google-auth-oauthlib

@@ -22,15 +22,6 @@ from tabulate import tabulate
 
 from . import res
 
-"""
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
-"""
-
-
 class ClsRoom(commands.Cog):
     """cog to maintain classroom things"""
 
@@ -71,9 +62,16 @@ class ClsRoom(commands.Cog):
         }
 
         # rollnum things
-        self.data = pd.read_csv(
-            os.path.join(os.path.abspath(__file__ + "/../../"), "clsroom/resource/db.csv")
+    
+        self.stud_data=pd.read_csv(
+            os.path.join(os.path.abspath(__file__ + "/../../"), "clsroom/resource/sk_data_v4.csv")
         )
+
+        self.data=self.stud_data.copy().drop(columns=['Unnamed: 0'])
+        self.data['Name']=self.data.Name.str.upper()
+        self.data['Fathername']=self.data.Fathername.str.upper()
+
+
         self.ai_data = pd.read_csv(
             os.path.join(os.path.abspath(__file__ + "/../../"), "clsroom/resource/ai.csv")
         )
@@ -90,7 +88,7 @@ class ClsRoom(commands.Cog):
         """send remainder to dob remainder on date mentioned"""
         now = dt.datetime.now(tz=gettz("Asia/Kolkata")).strftime("%d%m")
         v = await self.config1.all_users()
-        print(v)
+        # print(v)
         for user in v:
             if v[user]["last_activity"]==now:
                 return
@@ -509,7 +507,31 @@ class ClsRoom(commands.Cog):
 
     @commands.command()
     async def rnum(self, ctx, rollnumber: str):
-        """Get detailed information about the given rollnumber of a person"""
+        """Fetch information about the given rollnumber of a person
+`API` calls moved to [p]rrnum"""
+        rollnumber = rollnumber.upper()
+        d=self.stud_data[self.stud_data.Rno==rollnumber]
+        emb = discord.Embed(
+            title="Given roll number not found, try using `rrnum` instead",
+            color=await ctx.embed_color(),
+        )
+        if len(d):
+            d=self.stud_data[self.stud_data.Rno==rollnumber].iloc[0]
+            emb.title=d['Name'].split()[0].capitalize()+ "'s Details"
+            for i in dict(d):
+                if 'Unnamed' in i:
+                    continue
+                emb.add_field(
+                    name=i,
+                    value=d[i],
+                )
+            emb.set_thumbnail(url=f"http://results.skcet.ac.in:611/assets/StudentImage/{rollnumber}.jpg")
+            
+        return await ctx.send(embed=emb)
+
+    @commands.command()
+    async def rrnum(self, ctx, rollnumber: str):
+        """Fetch information about the given rollnumber of a person"""
         rollnumber = rollnumber.upper()
         KEY='tyut54yh56thtgh'
         url=f"http://results.skcet.ac.in:611/assets/StudentImage/{rollnumber}.jpg"
@@ -563,24 +585,24 @@ class ClsRoom(commands.Cog):
                 await ctx.send(embed=emb)
 
     @commands.command()
-    async def sname(self, ctx, option):
+    async def sname(self, ctx, name):
         """search by name"""
-        a = option.upper()
+        name = name.upper()
         # d=self.data.loc[self.data["name"]==a]
-        d = self.data[self.data["name"].str.contains(a, na=False)]
+        d = self.data[self.data["Name"].str.contains(name, na=False)]
         i = 1
 
         table = []
 
         # search by first name
         for index, k in d.iterrows():
-            table.append([i, str(k["name"]) + " " + str(k["s_name"]), k["dept"], k["r_no"]])
+            table.append([i, str(k["Name"]) , str(k["Fathername"]), k["Stream"], k["Rno"]])
             i += 1
 
         # search in second name
-        d = self.data[self.data["s_name"].str.contains(a, na=False)]
+        d = self.data[self.data["Fathername"].str.contains(name, na=False)]
         for index, k in d.iterrows():
-            table.append([i, k["name"] + " " + k["s_name"], k["dept"], k["r_no"]])
+            table.append([i, str(k["Name"]) , str(k["Fathername"]), k["Stream"], k["Rno"]])
             i += 1
 
         i = len(table)
@@ -589,7 +611,7 @@ class ClsRoom(commands.Cog):
                 cf.pagify(
                     tabulate(
                         table,
-                        headers=["Sno", "Name", "Department", "Roll no"],
+                        headers=["Sno","Name", "Father name", "Department", "Roll no"],
                         tablefmt="presto",
                         colalign=("left",),
                     ),

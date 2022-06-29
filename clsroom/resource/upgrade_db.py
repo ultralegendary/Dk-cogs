@@ -2,6 +2,9 @@ import os
 
 import pandas as pd
 
-data = pd.read_csv("rollnum/resource/db.csv")
+data = pd.read_csv("sk_data_v3.csv")
+# data = pd.read_csv("db.csv")
 
-print((data.loc[data["r_no"] == "17EUCS001"].iloc[0])["name"])
+data['Rno']=data['Rno'].str.upper()
+data.to_csv('sk_data_v4.csv')
+
